@@ -16,7 +16,7 @@
   --bg:#05060a; --text:#fff; --dim:rgba(235,235,245,.6); --dim2:rgba(235,235,245,.38);
   --line:rgba(255,255,255,.08); --fill:rgba(118,118,128,.24); --fill2:rgba(118,118,128,.36);
   --accent:#0a84ff; --green:#30d158; --red:#ff453a; --orange:#ff9f0a; --yellow:#ffd60a;
-  --r:30px; --side:96px; --wgt:316px;
+  --r:30px; --side:88px; --wgt:316px;
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
   --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
   --wp1:#0b2a5c; --wp2:#06142e;
@@ -40,11 +40,10 @@ svg{display:block}
 #wall{position:fixed;inset:0;background:
   radial-gradient(90% 70% at 15% 0%,var(--wp1) 0%,transparent 70%),
   radial-gradient(80% 60% at 100% 100%,var(--wp2) 0%,transparent 70%),#05060a}
-#app{position:fixed;inset:0;display:flex;gap:10px;
-  padding:calc(var(--sat) + 10px) calc(var(--sar) + 10px) calc(var(--sab) + 10px) calc(var(--sal) + 10px)}
+#app{position:fixed;inset:0;display:flex;gap:0;padding:0}
 
 /* ---------- barra laterale ---------- */
-#side{width:var(--side);flex:none;border-radius:var(--r);display:flex;flex-direction:column;align-items:center;padding:18px 0 14px;gap:12px}
+#side{width:calc(var(--side) + var(--sal));flex:none;border-radius:0;border:0;border-right:1px solid rgba(255,255,255,.08);box-shadow:none;display:flex;flex-direction:column;align-items:center;padding:calc(var(--sat) + 14px) 0 calc(var(--sab) + 14px) var(--sal);gap:12px}
 #sideClock{font-size:23px;font-weight:700;letter-spacing:-.4px}
 #sideTemp{font-size:13px;color:var(--dim);margin-top:-6px;min-height:16px}
 #recents{flex:1;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center}
@@ -54,7 +53,10 @@ svg{display:block}
 #micBtn{background:conic-gradient(from 200deg,#5e5ce6,#bf5af2,#ff375f,#ff9f0a,#30d158,#64d2ff,#5e5ce6);padding:3px}
 #micBtn span{width:100%;height:100%;border-radius:15px;background:#111216;display:grid;place-items:center}
 
-#main{flex:1;position:relative;border-radius:var(--r);overflow:hidden;min-width:0;isolation:isolate}
+#main{flex:1;position:relative;border-radius:0;overflow:hidden;min-width:0;isolation:isolate}
+#dash .ov{margin-top:var(--sat)}
+#dash #chips,#dash #navBot,#dash #routeCard{margin-top:0;margin-bottom:var(--sab)}
+#home,#phone,#settings{padding:var(--sat) var(--sar) var(--sab) 0}
 .view{position:absolute;inset:0;display:none;flex-direction:column}
 .view.on{display:flex}
 
@@ -174,6 +176,32 @@ body.nav #navTop{display:block}
 body.nav #navBot{display:flex}
 body.nav #wAudio,body.nav #wTrip{display:none}
 
+/* modalità schermo: riquadri / app a metà / solo mappa */
+body.lay-map{--wgt:0px}
+body.lay-apps{--wgt:min(48%,580px)}
+body.lay-map #widgets,body.lay-apps #widgets{display:none}
+#appsPanel{right:14px;top:14px;bottom:14px;width:var(--wgt);border-radius:28px;display:none;flex-direction:column;overflow:hidden}
+body.lay-apps #appsPanel{display:flex}
+#apHead{display:flex;align-items:center;gap:14px;padding:16px 18px 10px}
+#apClock{font-size:30px;font-weight:700;letter-spacing:-.5px}
+#apDate{font-size:13px;color:var(--dim)}
+#apSpeed{margin-left:auto;display:flex;align-items:baseline;gap:4px;padding:8px 14px;border-radius:16px;background:var(--fill)}
+#apSpeed b{font-size:26px;font-weight:700}
+#apSpeed small{font-size:12px;color:var(--dim)}
+#apSpeed.over{background:var(--red)}
+#apGrid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:16px 8px;padding:8px 16px 16px;align-content:start}
+#apGrid .app span{font-size:13px;max-width:100px}
+#apGrid .tile{width:min(76px,100%)}
+#apFoot{display:flex;gap:10px;padding:10px 16px 16px}
+#apFoot button{flex:1}
+#miniSpeed{right:14px;top:14px;width:84px;height:84px;border-radius:50%;display:none;flex-direction:column;align-items:center;justify-content:center}
+#miniSpeed b{font-size:32px;font-weight:700;line-height:1}
+#miniSpeed small{font-size:11px;color:var(--dim)}
+#miniSpeed.over{background:var(--red)}
+body.lay-map #miniSpeed{display:flex}
+body.lay-map #searchBox,body.lay-map #navTop,body.lay-map #routeCard,body.lay-map #navBot{width:min(560px,calc(100% - 140px))}
+#layBtn{color:var(--accent)}
+
 /* ---------- home ---------- */
 #home{background:transparent}
 #pages{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
@@ -292,18 +320,25 @@ body.night.dim #dimLayer{opacity:.28}
 @media (orientation:portrait){
   :root{--wgt:0px}
   #app{flex-direction:column-reverse}
-  #side{width:auto;height:92px;flex-direction:row;padding:0 18px;gap:16px}
+  #side{width:auto;height:calc(86px + var(--sab));flex-direction:row;padding:0 calc(var(--sar) + 18px) var(--sab) calc(var(--sal) + 18px);gap:16px;border-right:0;border-top:1px solid rgba(255,255,255,.08)}
+  #home,#phone,#settings{padding:var(--sat) var(--sar) 0 var(--sal)}
+  #dash #chips,#dash #navBot,#dash #routeCard{margin-bottom:0}
   #sideTemp{margin:0}
   #recents{flex-direction:row}
+  :root{--bot:164px}
+  body.lay-map{--bot:0px} body.lay-apps{--bot:calc(46% + 14px)}
   #widgets{left:14px;right:14px;top:auto;bottom:14px;width:auto;height:150px;flex-direction:row}
+  #appsPanel{left:14px;right:14px;top:auto;bottom:14px;width:auto;height:46%}
+  body.lay-apps{--wgt:0px}
   #widgets .wg{flex:1;min-width:0}
   #wTrip,#wInfo{display:none}
   #gauge{width:100px;height:100px}
-  #chips{right:0;bottom:164px}
-  #mapCtl{right:14px;top:auto;bottom:240px;transform:none}
-  #attrib{right:14px;bottom:168px}
+  #chips{right:0;bottom:var(--bot)}
+  #mapCtl{right:14px;top:auto;bottom:calc(var(--bot) + 80px);transform:none}
+  #attrib{right:14px;bottom:calc(var(--bot) + 4px)}
   #searchBox,#navTop,#routeCard,#navBot{width:calc(100% - 28px)}
-  #routeCard,#navBot{bottom:178px}
+  #routeCard,#navBot{bottom:calc(var(--bot) + 14px)}
+  body.lay-map #searchBox,body.lay-map #navTop,body.lay-map #routeCard,body.lay-map #navBot{width:calc(100% - 128px)}
   #keypad{flex-direction:column;gap:12px}
 }
 </style>
@@ -339,6 +374,13 @@ body.night.dim #dimLayer{opacity:.28}
         <button class="glass press" id="zoomIn" aria-label="Avvicina"></button>
         <button class="glass press" id="zoomOut" aria-label="Allontana"></button>
         <button class="glass press" id="recenter" aria-label="Centra"></button>
+        <button class="glass press" id="layBtn" aria-label="Cambia schermata"></button>
+      </div>
+      <div class="ov glass" id="miniSpeed"><b class="num" id="msVal">--</b><small>km/h</small></div>
+      <div class="ov glass" id="appsPanel">
+        <div id="apHead"><div><div id="apClock" class="num">--:--</div><div id="apDate"></div></div><div id="apSpeed"><b class="num" id="apVal">--</b><small>km/h</small></div></div>
+        <div id="apGrid"></div>
+        <div id="apFoot"><button class="pbtn press" id="apAdd">+ Aggiungi app</button><button class="pbtn press" id="apHow">Affianca un’app</button></div>
       </div>
 
       <div class="ov glass" id="routeCard">
@@ -429,6 +471,7 @@ const P = {
   gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/>',
   grid:'<rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/>',
   map:'<path d="M9 3.5 3 6v14.5l6-2.5 6 2.5 6-2.5V3.5L15 6z"/><path d="M9 3.5V18M15 6v14.5"/>',
+  dash:'<rect x="3" y="3" width="8" height="10" rx="2"/><rect x="13" y="3" width="8" height="6" rx="2"/><rect x="13" y="11" width="8" height="10" rx="2"/><rect x="3" y="15" width="8" height="6" rx="2"/>',
   link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3A5 5 0 0 0 13.4 3.4l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/>',
   house:'<path d="M3 11 12 3l9 8v9.5a1 1 0 0 1-1 1h-5.5V15h-5v6.5H4a1 1 0 0 1-1-1z"/>',
   brief:'<rect x="2.5" y="7" width="19" height="14" rx="2.5"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2M2.5 13h19"/>',
@@ -535,7 +578,7 @@ function enc(s){return encodeURIComponent(String(s).trim())}
 
 /* ================= stato salvato ================= */
 const KEY='icar.v1';
-const DEF = {v:3, nav:'google', h24:true, wake:true, wall:'blu', call:'tel', start:'dash',
+const DEF = {v:3, layout:'wgt', nav:'google', h24:true, wake:true, wall:'blu', call:'tel', start:'dash',
   home:'', work:'', homeLL:null, workLL:null, places:[], contacts:[], hidden:[], custom:[], order:[], recent:['gmaps','music','phone'],
   night:'auto', dim:true, limit:0, beep:true, parked:null, voice:true, trip:null, trips:[], lastPos:null, audio:['music','spotify','pod','wa']};
 let S;
@@ -643,8 +686,9 @@ function tileURL(z,x,y){ const n=Math.pow(2,z); x=((x%n)+n)%n;
 function mapProvider(){ const c=!!(S.cartoKey||'').trim(); layer.classList.toggle('osm',!c); $('#attrib').textContent=c?'© OpenStreetMap · © CARTO':'© OpenStreetMap'; }
 function layoutFocus(){
   const w=mapEl.clientWidth||900, h=mapEl.clientHeight||700, port=h>w;
-  const wg=port?0:(($('#widgets').offsetWidth||316)+28);
-  const bottom=port?170:0;
+  const L=S.layout||'wgt', panel=L==='apps'?$('#appsPanel'):L==='wgt'?$('#widgets'):null;
+  const wg=port||!panel?0:((panel.offsetWidth||316)+28);
+  const bottom=port&&panel?(panel.offsetHeight+28):0;
   M.fx=(w-wg)/2;
   M.fy=document.body.classList.contains('nav') ? (h-bottom)*0.66 : (h-bottom)/2;
 }
@@ -731,6 +775,25 @@ function fitBounds(pts){
   let z=17; while(z>3 && (lon2x(lo1,z)-lon2x(lo0,z)>aw || lat2y(la0,z)-lat2y(la1,z)>Math.max(200,ah))) z--;
   M.z=z; M.lat=y2lat((lat2y(la0,z)+lat2y(la1,z))/2 + (port?0:60),z); M.lon=(lo0+lo1)/2; M.follow=false; M.zManual=true; mapReset();
 }
+const LAYS=[['wgt','dash','Mappa e riquadri'],['apps','grid','Mappa e app a metà schermo'],['map','map','Solo mappa a tutto schermo']];
+function applyLayout(){
+  const L=S.layout||'wgt';
+  document.body.classList.toggle('lay-map',L==='map'); document.body.classList.toggle('lay-apps',L==='apps');
+  const i=LAYS.findIndex(x=>x[0]===L), nx=LAYS[(i+1)%LAYS.length];
+  $('#layBtn').innerHTML=svg(nx[1]); $('#layBtn').setAttribute('aria-label',nx[2]);
+  if(L==='apps') renderAppsPanel();
+  if(current==='dash'){ requestAnimationFrame(()=>{ layoutFocus(); mapReset(); }); }
+}
+$('#layBtn').onclick=()=>{ const i=LAYS.findIndex(x=>x[0]===(S.layout||'wgt')), nx=LAYS[(i+1)%LAYS.length]; S.layout=nx[0]; save(); applyLayout(); toast(nx[2]); };
+function renderAppsPanel(){
+  const apps=visibleApps().filter(a=>!['dash','set','addapp'].includes(a.id));
+  $('#apGrid').innerHTML=apps.map(a=>'<button class="app" data-id="'+a.id+'">'+tileHTML(a)+'<span>'+esc(a.name)+'</span></button>').join('');
+  $('#apGrid').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>launch(appById(b.dataset.id)));
+}
+$('#apAdd').onclick=()=>openCatalog();
+$('#apHow').onclick=()=>choose('Affiancare un’app alla mappa',[
+  ['Ho capito','blue',()=>{}]
+],'iCar non può mostrare un’altra app dentro di sé, ma l’iPad può metterle una accanto all’altra: tocca i pulsanti colorati (o i tre puntini) in alto nella finestra di iCar → affianca a sinistra → poi tocca l’app da mettere a destra. Trascina la linea in mezzo per cambiare le dimensioni.');
 function mapNote(t){ const n=$('#mapNote'); n.style.display=t?'block':'none'; n.innerHTML=t||''; }
 window.addEventListener('resize',()=>{ clearTimeout(window._rz); window._rz=setTimeout(()=>{ if(current==='home') renderHome(); if(current==='dash'){ layoutFocus(); mapReset(); } },150); });
 
@@ -770,14 +833,15 @@ function onPos(p){
 }
 function updateSpeed(){
   const k=pos?pos.kmh:0, max=S.limit?Math.max(S.limit*1.3,60):130;
-  $('#speed').textContent=pos?k:'--';
+  $('#speed').textContent=pos?k:'--'; $('#msVal').textContent=pos?k:'--'; $('#apVal').textContent=pos?k:'--';
   const over=S.limit && k>S.limit+2;
-  $('#wSpeed').classList.toggle('over',!!over);
+  $('#wSpeed').classList.toggle('over',!!over); $('#miniSpeed').classList.toggle('over',!!over); $('#apSpeed').classList.toggle('over',!!over);
   const arc=$('#gArc'); arc.setAttribute('stroke-dasharray',(Math.min(1,k/max)*245).toFixed(1)+' 400');
   arc.setAttribute('stroke',over?'#ff453a':(S.limit&&k>S.limit*0.9?'#ffd60a':'#30d158'));
   if(over && S.beep && Date.now()-lastBeep>8000){ lastBeep=Date.now(); beep(); }
 }
 function renderLimit(){ const b=$('#limBadge'); b.classList.toggle('off',!S.limit); b.textContent=S.limit||'—'; $('#limTxt').textContent=S.limit?'limite':'avviso spento'; }
+$('#miniSpeed').onclick=()=>$('#wSpeed').onclick();
 $('#wSpeed').onclick=()=>{ const v=[0,30,50,70,90,110,130]; S.limit=v[(v.indexOf(S.limit)+1)%v.length]; save(); renderLimit(); updateSpeed(); toast(S.limit?'Avviso oltre '+S.limit+' km/h':'Avviso velocità spento'); };
 
 /* ================= computer di bordo ================= */
@@ -1121,7 +1185,7 @@ $('#kpDel').onclick=()=>{ kp=kp.slice(0,-1); $('#kpNum').textContent=kp; };
 
 /* ================= catalogo app ================= */
 function openCatalog(){ $('#cat').classList.add('on'); $('#catSearch').value=''; renderCatalog(); }
-$('#catDone').onclick=()=>{ $('#cat').classList.remove('on'); if(current==='home') renderHome(); if(current==='settings') renderSettings(); };
+$('#catDone').onclick=()=>{ $('#cat').classList.remove('on'); if(S.layout==='apps') renderAppsPanel(); if(current==='home') renderHome(); if(current==='settings') renderSettings(); };
 $('#catSearch').oninput=renderCatalog;
 function renderCatalog(){
   const q=$('#catSearch').value.trim().toLowerCase(); let h='';
@@ -1161,9 +1225,9 @@ function ask(title,fields,cb,okLabel,text){
   $('#mCancel').onclick=()=>$('#modal').classList.remove('on');
   $('#mOk').onclick=()=>{ const v=fields.map((_,i)=>$('#mf'+i).value); $('#modal').classList.remove('on'); cb(v); };
 }
-function choose(title,opts){
+function choose(title,opts,text){
   const box=$('#modalBox');
-  box.innerHTML='<h4>'+esc(title)+'</h4>'+opts.map((o,i)=>'<button class="pbtn '+o[1]+' press" data-o="'+i+'" style="display:block;width:100%;margin-bottom:10px'+(o[1]==='red'?';color:var(--red)':'')+'">'+esc(o[0])+'</button>').join('')+
+  box.innerHTML='<h4>'+esc(title)+'</h4>'+(text?'<p>'+esc(text)+'</p>':'')+opts.map((o,i)=>'<button class="pbtn '+o[1]+' press" data-o="'+i+'" style="display:block;width:100%;margin-bottom:10px'+(o[1]==='red'?';color:var(--red)':'')+'">'+esc(o[0])+'</button>').join('')+
     '<button class="pbtn" id="mCancel" style="display:block;width:100%;background:none;color:var(--dim)">Annulla</button>';
   box.querySelectorAll('.pbtn.red').forEach(b=>b.classList.remove('red'));
   $('#modal').classList.add('on'); $('#mCancel').onclick=()=>$('#modal').classList.remove('on');
@@ -1185,6 +1249,7 @@ function renderSettings(){
 
   h+='<div class="gtitle">Guida</div><div class="group glass">';
   h+='<div class="row"><label>All’apertura mostra</label>'+sel('sStart',[['dash','Mappa'],['home','App']],S.start)+'</div>';
+  h+='<div class="row"><label>Schermata della mappa<br><small>Si cambia anche col tasto sotto lo zoom</small></label>'+sel('sLay',LAYS.map(x=>[x[0],x[2]]),S.layout||'wgt')+'</div>';
   h+='<div class="row"><label>Avviso di velocità<br><small>Puoi cambiarlo anche toccando il tachimetro</small></label>'+sel('sLimit',[0,30,50,70,90,110,130].map(v=>[v,v?'Oltre '+v+' km/h':'Spento']),S.limit)+'</div>';
   h+='<div class="row"><label>Suono di avviso</label>'+sw('sBeep',S.beep)+'</div></div>';
 
@@ -1220,7 +1285,7 @@ function renderSettings(){
   h+='<div class="row"><label>Chiave mappe CARTO (facoltativa)<br><small>Senza chiave iCar usa OpenStreetMap. Con una chiave gratuita di carto.com/basemaps/apikey la mappa è più nitida e moderna.</small></label><input type="text" id="sKey" value="'+esc(S.cartoKey||'')+'" placeholder="Incolla la chiave" autocapitalize="off" autocorrect="off"></div></div>';
 
   h+='<div class="gtitle">Ripristino</div><div class="group glass"><div class="row"><label>Riporta tutto come all’inizio</label><button class="btn red" id="reset">Ripristina</button></div></div>';
-  h+='<div class="note" style="text-align:center">iCar 3.2 · mappe © OpenStreetMap · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
+  h+='<div class="note" style="text-align:center">iCar 3.4 · mappe © OpenStreetMap · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
   $('#setBody').innerHTML=h;
 
   const on=(id,ev,f)=>{ const e=document.getElementById(id); if(e) e[ev]=f; };
@@ -1230,6 +1295,7 @@ function renderSettings(){
   on('addPlace','onclick',()=>ask('Nuovo luogo preferito',[{ph:'Nome (es. Palestra)'},{ph:'Indirizzo'}],v=>{ if(v[0].trim()&&v[1].trim()){S.places.push({name:v[0].trim(),addr:v[1].trim()});save();renderSettings();} }));
   on('sVoice','onchange',e=>{S.voice=e.target.checked;save(); if(S.voice) say('Istruzioni vocali attive');});
   on('sStart','onchange',e=>{S.start=e.target.value;save();});
+  on('sLay','onchange',e=>{S.layout=e.target.value;save();applyLayout();});
   on('sLimit','onchange',e=>{S.limit=+e.target.value;save();renderLimit();});
   on('sBeep','onchange',e=>{S.beep=e.target.checked;save(); if(S.beep) beep();});
   on('clrTrips','onclick',()=>{S.trips=[];save();renderSettings();});
@@ -1264,12 +1330,12 @@ document.addEventListener('click',()=>{ requestWake(); if(S.beep&&S.limit) audio
 /* ================= orologio ================= */
 const GIORNI=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
 const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
-function tick(){ const d=new Date(), t=hm(d); $('#sideClock').textContent=t; $('#clockBig').textContent=t;
+function tick(){ const d=new Date(), t=hm(d); $('#sideClock').textContent=t; $('#clockBig').textContent=t; $('#apClock').textContent=t; $('#apDate').textContent=GIORNI[d.getDay()]+' '+d.getDate()+' '+MESI[d.getMonth()];
   $('#dateBig').textContent=GIORNI[d.getDay()]+' '+d.getDate()+' '+MESI[d.getMonth()]; applyNight(); }
 
 /* ================= avvio ================= */
 if('speechSynthesis' in window){ try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{}; }catch(e){} }
-applyWall(); tick(); setInterval(tick,10000);
+applyWall(); applyLayout(); tick(); setInterval(tick,10000);
 renderRecents(); show(S.start==='home'?'home':'dash');
 if('serviceWorker' in navigator && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 window.__icar={S:S,M:M,NAV:NAV,handleVoice:handleVoice,preview:preview};
