@@ -64,6 +64,7 @@ body.day #map{background:#e8e4dc}
 #mapLayer{position:absolute;left:0;top:0;will-change:transform}
 #mapLayer img.t{position:absolute;width:256px;height:256px;opacity:0;transition:opacity .35s;pointer-events:none;-webkit-user-drag:none}
 #mapLayer img.t.on{opacity:1}
+body.night #mapLayer.osm img.t{filter:invert(.92) hue-rotate(180deg) brightness(.9) contrast(.88) saturate(.7)}
 #routeSvg{position:absolute;pointer-events:none;overflow:visible}
 #me{position:absolute;width:0;height:0;transition:left .95s linear,top .95s linear;z-index:3;display:none}
 #me i{position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;background:#0a84ff;border:4px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.45)}
@@ -319,7 +320,7 @@ body.night.dim #dimLayer{opacity:.28}
     <!-- DASHBOARD -->
     <section class="view" id="dash">
       <div id="map"><div id="mapLayer"><svg id="routeSvg"></svg><div id="destPin"></div><div id="me"><b></b><i></i></div></div></div>
-      <div id="attrib">© OpenStreetMap · © CARTO</div>
+      <div id="attrib">© OpenStreetMap</div>
 
       <div class="ov glass" id="searchBox">
         <form id="searchRow" autocomplete="off">
@@ -632,9 +633,11 @@ function y2lat(y,z){ const n=Math.PI-2*Math.PI*y/(TS*Math.pow(2,z)); return 180/
 const M={z:6,lat:42.5,lon:12.5,follow:true,zManual:false,ox:0,oy:0,tiles:{},style:'',fx:0,fy:0};
 if(S.lastPos){ M.lat=S.lastPos.lat; M.lon=S.lastPos.lon; M.z=15; }
 const mapEl=$('#map'), layer=$('#mapLayer');
-function tileURL(z,x,y){ const n=Math.pow(2,z); x=((x%n)+n)%n; const s='abcd'[(x+y)%4];
-  return M.style==='night' ? 'https://'+s+'.basemaps.cartocdn.com/dark_all/'+z+'/'+x+'/'+y+'@2x.png'
-                           : 'https://'+s+'.basemaps.cartocdn.com/rastertiles/voyager/'+z+'/'+x+'/'+y+'@2x.png'; }
+function tileURL(z,x,y){ const n=Math.pow(2,z); x=((x%n)+n)%n;
+  const k=(S.cartoKey||'').trim();
+  if(k) return 'https://basemaps.cartocdn.com/rastertiles/'+(M.style==='night'?'dark_all':'voyager')+'/'+z+'/'+x+'/'+y+'@2x.png?key='+enc(k);
+  return 'https://tile.openstreetmap.org/'+z+'/'+x+'/'+y+'.png'; }
+function mapProvider(){ const c=!!(S.cartoKey||'').trim(); layer.classList.toggle('osm',!c); $('#attrib').textContent=c?'© OpenStreetMap · © CARTO':'© OpenStreetMap'; }
 function layoutFocus(){
   const w=mapEl.clientWidth||900, h=mapEl.clientHeight||700, port=h>w;
   const wg=port?0:(($('#widgets').offsetWidth||316)+28);
@@ -643,6 +646,7 @@ function layoutFocus(){
   M.fy=document.body.classList.contains('nav') ? (h-bottom)*0.66 : (h-bottom)/2;
 }
 function mapReset(){
+  mapProvider();
   layer.querySelectorAll('img.t').forEach(i=>i.remove()); M.tiles={};
   M.ox=Math.round(lon2x(M.lon,M.z)); M.oy=Math.round(lat2y(M.lat,M.z));
   mapDraw(false);
@@ -1212,10 +1216,11 @@ function renderSettings(){
   h+='<div class="row"><label>Orologio 24 ore</label>'+sw('s24',S.h24)+'</div>';
   h+='<div class="row"><label>Tieni lo schermo acceso</label>'+sw('sWake',S.wake)+'</div>';
   h+='<div class="row"><label>Mappa scura (notte)</label>'+sel('sNight',[['auto','Dopo il tramonto'],['on','Sempre'],['off','Mai']],S.night)+'</div>';
-  h+='<div class="row"><label>Di notte abbassa la luminosità</label>'+sw('sDim',S.dim)+'</div></div>';
+  h+='<div class="row"><label>Di notte abbassa la luminosità</label>'+sw('sDim',S.dim)+'</div>';
+  h+='<div class="row"><label>Chiave mappe CARTO (facoltativa)<br><small>Senza chiave iCar usa OpenStreetMap. Con una chiave gratuita di carto.com/basemaps/apikey la mappa è più nitida e moderna.</small></label><input type="text" id="sKey" value="'+esc(S.cartoKey||'')+'" placeholder="Incolla la chiave" autocapitalize="off" autocorrect="off"></div></div>';
 
   h+='<div class="gtitle">Ripristino</div><div class="group glass"><div class="row"><label>Riporta tutto come all’inizio</label><button class="btn red" id="reset">Ripristina</button></div></div>';
-  h+='<div class="note" style="text-align:center">iCar 3.0 · mappe © OpenStreetMap, © CARTO · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
+  h+='<div class="note" style="text-align:center">iCar 3.1 · mappe © OpenStreetMap · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
   $('#setBody').innerHTML=h;
 
   const on=(id,ev,f)=>{ const e=document.getElementById(id); if(e) e[ev]=f; };
@@ -1245,6 +1250,7 @@ function renderSettings(){
   on('sWake','onchange',e=>{S.wake=e.target.checked;save();if(S.wake)requestWake();else releaseWake();});
   on('sNight','onchange',e=>{S.night=e.target.value;save();applyNight();});
   on('sDim','onchange',e=>{S.dim=e.target.checked;save();applyNight();});
+  on('sKey','onchange',e=>{S.cartoKey=e.target.value.trim();save();toast(S.cartoKey?'Mappe CARTO attive':'Mappe OpenStreetMap attive');});
   on('reset','onclick',()=>ask('Ripristinare tutto? Scrivi SI per confermare',[{ph:'SI'}],v=>{ if(v[0].trim().toUpperCase()==='SI'){ S=JSON.parse(JSON.stringify(DEF)); T=tripNew(); save(); applyWall(); renderRecents(); renderSettings(); toast('Ripristinato'); } },'Conferma'));
 }
 function applyWall(){ const w=WALL[S.wall]||WALL.blu; document.documentElement.style.setProperty('--wp1',w[0]); document.documentElement.style.setProperty('--wp2',w[1]); }
