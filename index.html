@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="iCar">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<title>iCar</title>
+<style>
+:root{
+  --bg:#000; --panel:#1c1c1e; --panel2:#2c2c2e; --line:#3a3a3c;
+  --text:#fff; --dim:#98989f; --accent:#0a84ff; --green:#30d158; --red:#ff453a;
+  --side:104px; --radius:22px;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;}
+input,select,button{font:inherit;color:inherit}
+input,select{-webkit-user-select:text;user-select:text}
+button{background:none;border:0;cursor:pointer}
+svg{display:block}
+.ico{fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+#app{position:fixed;inset:0;display:flex;
+  padding:calc(var(--sat) + 10px) calc(var(--sar) + 10px) calc(var(--sab) + 10px) calc(var(--sal) + 10px);gap:10px}
+
+/* ---------- barra laterale stile CarPlay ---------- */
+#side{width:var(--side);flex:none;background:var(--panel);border-radius:var(--radius);
+  display:flex;flex-direction:column;align-items:center;padding:16px 0 14px;gap:14px}
+#sideClock{font-size:24px;font-weight:600;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+#sideStatus{display:flex;gap:6px;align-items:center;color:var(--dim);font-size:13px;margin-top:-8px}
+#recents{flex:1;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center}
+#recents .tile{width:66px;height:66px;border-radius:16px}
+#recents .tile svg{width:34px;height:34px}
+#toggleView{width:66px;height:66px;border-radius:16px;background:var(--panel2);display:grid;place-items:center}
+#toggleView svg{width:32px;height:32px}
+
+#main{flex:1;position:relative;border-radius:var(--radius);overflow:hidden;min-width:0;
+  background:radial-gradient(120% 120% at 20% 0%, var(--wp1) 0%, var(--wp2) 55%, #000 100%)}
+.view{position:absolute;inset:0;display:none;flex-direction:column}
+.view.on{display:flex}
+
+/* ---------- home a pagine ---------- */
+#pages{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+#pages::-webkit-scrollbar{display:none}
+.page{flex:none;width:100%;height:100%;scroll-snap-align:start;display:grid;
+  padding:34px 30px 10px;gap:18px 10px;align-content:center;justify-items:center}
+.app{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;transition:transform .12s}
+.app:active{transform:scale(.92)}
+.tile{width:min(118px,100%);aspect-ratio:1;border-radius:26%;display:grid;place-items:center;
+  box-shadow:0 6px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.25)}
+.tile svg{width:52%;height:52%}
+.app span{font-size:17px;font-weight:500;text-align:center;max-width:140px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+#dots{display:flex;gap:9px;justify-content:center;padding:6px 0 16px}
+#dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.35)}
+#dots i.on{background:#fff}
+
+/* ---------- dashboard ---------- */
+#dash{display:none;padding:12px;gap:12px}
+#dash.on{display:grid;grid-template-columns:1.35fr 1fr;grid-template-rows:1fr 1fr}
+.card{background:rgba(28,28,30,.92);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.card h3{font-size:15px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+#cardNav{grid-row:1/3}
+.searchRow{display:flex;gap:10px;margin-bottom:14px}
+.searchRow input{flex:1;background:var(--panel2);border:0;border-radius:14px;padding:16px 18px;font-size:19px;outline:none}
+.searchRow button{background:var(--accent);border-radius:14px;padding:0 20px;font-weight:600;font-size:18px}
+.destList{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.dest{display:flex;align-items:center;gap:16px;background:var(--panel2);border-radius:16px;padding:14px 16px;text-align:left;width:100%}
+.dest:active{background:#3a3a3c}
+.dest .di{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;flex:none}
+.dest .di svg{width:24px;height:24px}
+.dest b{display:block;font-size:19px;font-weight:600}
+.dest small{display:block;font-size:14px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dest div{min-width:0;flex:1}
+.nearby{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.nearby button{background:var(--panel2);border-radius:16px;padding:12px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:14px}
+.nearby button:active{background:#3a3a3c}
+.nearby svg{width:28px;height:28px}
+
+#cardMusic .mbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:10px;flex:1;align-content:center}
+.mbtn{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:15px}
+.mbtn .tile{width:72px}
+
+#cardInfo{flex-direction:row;align-items:center;justify-content:space-around;gap:10px}
+.big{font-size:56px;font-weight:700;letter-spacing:-2px;font-variant-numeric:tabular-nums;line-height:1}
+.unit{font-size:15px;color:var(--dim);text-align:center;margin-top:6px}
+#wxIcon{font-size:44px;line-height:1;text-align:center}
+#wxTemp{font-size:34px;font-weight:600;text-align:center}
+#dateBig{font-size:15px;color:var(--dim);text-align:center}
+
+/* ---------- telefono ---------- */
+.topbar{display:flex;align-items:center;gap:12px;padding:16px 20px 6px}
+.topbar h2{font-size:26px;font-weight:700;flex:1}
+.back{display:flex;align-items:center;gap:4px;color:var(--accent);font-size:19px;padding:8px 4px}
+.back svg{width:22px;height:22px;stroke:var(--accent)}
+.seg{display:flex;background:var(--panel2);border-radius:12px;padding:3px}
+.seg button{padding:9px 18px;border-radius:9px;font-size:16px;font-weight:600;color:var(--dim)}
+.seg button.on{background:#636366;color:#fff}
+#phoneBody{flex:1;min-height:0;padding:10px 20px 20px;display:flex}
+#favs{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;align-content:start;overflow-y:auto}
+.fav{background:rgba(44,44,46,.95);border-radius:18px;padding:18px;display:flex;align-items:center;gap:14px;text-align:left}
+.fav:active{background:#48484a}
+.avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(#8e8e93,#636366);display:grid;place-items:center;font-size:22px;font-weight:600;flex:none}
+.fav b{font-size:19px;display:block}
+.fav small{color:var(--dim);font-size:14px}
+#keypad{flex:1;display:flex;gap:28px;align-items:center;justify-content:center}
+#kpDisplay{min-width:260px;text-align:center}
+#kpNum{font-size:40px;font-weight:300;letter-spacing:2px;min-height:52px;font-variant-numeric:tabular-nums;word-break:break-all}
+#kpGrid{display:grid;grid-template-columns:repeat(3,78px);gap:14px}
+.key{width:78px;height:78px;border-radius:50%;background:rgba(72,72,74,.9);font-size:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.key small{font-size:10px;letter-spacing:2px;color:#ddd;margin-top:2px}
+.key:active{background:#8e8e93}
+.callBtn{width:78px;height:78px;border-radius:50%;background:var(--green);display:grid;place-items:center;margin:16px auto 0}
+.callBtn svg{width:34px;height:34px}
+.delBtn{margin-top:12px;color:var(--dim);font-size:16px;padding:8px}
+
+/* ---------- impostazioni ---------- */
+#setBody{flex:1;overflow-y:auto;padding:8px 20px 30px;-webkit-overflow-scrolling:touch}
+.group{background:rgba(28,28,30,.95);border-radius:16px;margin-bottom:22px;overflow:hidden}
+.gtitle{font-size:13px;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;margin:0 6px 8px}
+.row{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);min-height:56px}
+.row:last-child{border-bottom:0}
+.row label{flex:1;font-size:17px}
+.row input[type=text],.row input[type=tel]{flex:2;background:var(--panel2);border:0;border-radius:10px;padding:11px 12px;font-size:16px;outline:none;min-width:0}
+.row select{background:var(--panel2);border:0;border-radius:10px;padding:10px 12px;font-size:16px}
+.btn{background:var(--panel2);border-radius:10px;padding:10px 16px;font-size:16px;font-weight:600}
+.btn.blue{background:var(--accent)}
+.btn.red{color:var(--red)}
+.sw,.row label.sw{position:relative;width:52px;height:32px;flex:none}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#39393d;border-radius:20px;transition:.2s}
+.sw span:before{content:"";position:absolute;width:28px;height:28px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.2s}
+.sw input:checked+span{background:var(--green)}
+.sw input:checked+span:before{transform:translateX(20px)}
+.mini{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;flex:none}
+.mini svg{width:22px;height:22px}
+.wps{display:flex;gap:10px}
+.wps button{width:40px;height:40px;border-radius:50%;border:3px solid transparent}
+.wps button.on{border-color:#fff}
+.note{color:var(--dim);font-size:14px;line-height:1.4;padding:0 6px 10px}
+
+/* ---------- toast e finestre ---------- */
+#toast{position:fixed;left:50%;bottom:calc(var(--sab) + 30px);transform:translateX(-50%) translateY(20px);
+  background:rgba(44,44,46,.97);padding:14px 22px;border-radius:16px;font-size:16px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:80vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:40}
+#modal.on{display:grid}
+#modalBox{background:var(--panel);border-radius:20px;padding:22px;width:min(440px,90vw)}
+#modalBox h4{font-size:20px;margin-bottom:14px}
+#modalBox input{width:100%;background:var(--panel2);border:0;border-radius:12px;padding:14px;font-size:17px;margin-bottom:10px;outline:none}
+#modalBox .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+
+/* ---------- verticale: barra in basso ---------- */
+@media (orientation:portrait){
+  #app{flex-direction:column-reverse}
+  #side{width:auto;height:96px;flex-direction:row;padding:0 16px;gap:16px}
+  #sideStatus{margin:0;flex-direction:column}
+  #recents{flex-direction:row}
+  #dash.on{grid-template-columns:1fr;grid-template-rows:1.5fr .8fr .7fr}
+  #cardNav{grid-row:auto}
+  #keypad{flex-direction:column;gap:10px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="side">
+    <div id="sideClock">--:--</div>
+    <div id="sideStatus"><span id="sideTemp"></span></div>
+    <div id="recents"></div>
+    <button id="toggleView" aria-label="Home / Dashboard"></button>
+  </aside>
+
+  <main id="main">
+    <section class="view on" id="home">
+      <div id="pages"></div>
+      <div id="dots"></div>
+    </section>
+
+    <section class="view" id="dash">
+      <div class="card" id="cardNav">
+        <h3>Dove vuoi andare?</h3>
+        <form class="searchRow" id="navForm">
+          <input id="navInput" type="text" placeholder="Indirizzo o luogo" autocomplete="off">
+          <button type="submit">Vai</button>
+        </form>
+        <div class="destList" id="destList"></div>
+        <div class="nearby" id="nearby"></div>
+      </div>
+      <div class="card" id="cardMusic">
+        <h3>Audio</h3>
+        <div class="mbtns" id="mbtns"></div>
+      </div>
+      <div class="card" id="cardInfo">
+        <div><div class="big" id="clockBig">--:--</div><div class="unit" id="dateBig"></div></div>
+        <div><div class="big" id="speed">--</div><div class="unit">km/h</div></div>
+        <div><div id="wxIcon"></div><div id="wxTemp">--°</div><div class="unit" id="wxDesc">Meteo</div></div>
+      </div>
+    </section>
+
+    <section class="view" id="phone">
+      <div class="topbar">
+        <button class="back" data-go="home"></button>
+        <h2>Telefono</h2>
+        <div class="seg"><button data-ph="favs" class="on">Preferiti</button><button data-ph="keypad">Tastierino</button></div>
+      </div>
+      <div id="phoneBody">
+        <div id="favs"></div>
+        <div id="keypad" style="display:none">
+          <div id="kpDisplay">
+            <div id="kpNum"></div>
+            <button class="callBtn" id="kpCall"></button>
+            <button class="delBtn" id="kpDel">Cancella</button>
+          </div>
+          <div id="kpGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="settings">
+      <div class="topbar">
+        <button class="back" data-go="home"></button>
+        <h2>Impostazioni</h2>
+      </div>
+      <div id="setBody"></div>
+    </section>
+  </main>
+</div>
+<div id="toast"></div>
+<div id="modal"><div id="modalBox"></div></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= icone (SVG generiche) ================= */
+const P = {
+  pin:'<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.6"/>',
+  nav:'<path d="M3.5 11.2 20.5 3.5l-7.7 17-2-7.4z"/>',
+  compass:'<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
+  smile:'<path d="M4 15a8 8 0 1 1 3 3l-4 2 1-5z"/><circle cx="9.5" cy="10.5" r=".6"/><circle cx="14.5" cy="10.5" r=".6"/><path d="M9 13.5a4 4 0 0 0 6 0"/>',
+  phone:'<path d="M21.5 16.6v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 1.6 3.8 2 2 0 0 1 3.6 1.6h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L7.5 9.4a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.9 2.2z"/>',
+  msg:'<path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-4-.9L3 21l1.9-5A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/>',
+  chat:'<path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-4-.9L3 21l1.9-5A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/><path d="M8 10h8M8 13.5h5"/>',
+  note:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  waves:'<path d="M4 10v4M8 6v12M12 3v18M16 7v10M20 10v4"/>',
+  mic:'<rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/>',
+  head:'<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/>',
+  play:'<circle cx="12" cy="12" r="9.5"/><path d="m10 8 6 4-6 4z"/>',
+  radio:'<rect x="2.5" y="8" width="19" height="13" rx="2.5"/><path d="M6 8l12-5"/><circle cx="8" cy="14.5" r="2.5"/><path d="M14.5 12.5h4M14.5 16.5h4"/>',
+  cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+  fuel:'<path d="M4 21.5V4.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v17M2.5 21.5h14M15 9.5h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V8l-3-3"/><rect x="6.5" y="6" width="6" height="4.5" rx=".5"/>',
+  park:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9.5 17V7h3.5a3 3 0 0 1 0 6H9.5"/>',
+  bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  food:'<path d="M7 2v20M4 2v6a3 3 0 0 0 6 0V2M18 2c-2 2-3 5-3 8h3v12"/>',
+  cafe:'<path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17M7 2.5v2.5M10.5 2.5v2.5M14 2.5v2.5"/>',
+  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/>',
+  dash:'<rect x="3" y="3" width="8" height="10" rx="2"/><rect x="13" y="3" width="8" height="6" rx="2"/><rect x="13" y="11" width="8" height="10" rx="2"/><rect x="3" y="15" width="8" height="6" rx="2"/>',
+  grid:'<rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/>',
+  link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3A5 5 0 0 0 13.4 3.4l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/>',
+  house:'<path d="M3 11 12 3l9 8v9.5a1 1 0 0 1-1 1h-5.5V15h-5v6.5H4a1 1 0 0 1-1-1z"/>',
+  brief:'<rect x="2.5" y="7" width="19" height="14" rx="2.5"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2M2.5 13h19"/>',
+  star:'<path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/>',
+  back:'<path d="m15 18-6-6 6-6"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  video:'<rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="m16 10.5 6-3.5v10l-6-3.5"/>',
+  book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5"/>',
+  camera:'<rect x="2.5" y="6" width="19" height="14" rx="3"/><circle cx="12" cy="13" r="3.8"/><path d="M8.5 6 10 3.5h4L15.5 6"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'
+};
+const svg = (k, cls) => '<svg viewBox="0 0 24 24" class="ico '+(cls||'')+'">'+(P[k]||P.link)+'</svg>';
+const G = {
+  blue:'linear-gradient(160deg,#5ac8fa,#0a60ff)', green:'linear-gradient(160deg,#5be37d,#1a9e3f)',
+  teal:'linear-gradient(160deg,#4fe3d6,#0a8f9e)', red:'linear-gradient(160deg,#ff6b6b,#d41f3a)',
+  pink:'linear-gradient(160deg,#ff7aa8,#e0245e)', purple:'linear-gradient(160deg,#c48bff,#7a2fd6)',
+  orange:'linear-gradient(160deg,#ffb54d,#ff6a00)', yellow:'linear-gradient(160deg,#ffe066,#f5a300)',
+  gray:'linear-gradient(160deg,#a1a1a6,#58585d)', dark:'linear-gradient(160deg,#3a3a3c,#1c1c1e)',
+  cyan:'linear-gradient(160deg,#6be0ff,#0094d4)', lime:'linear-gradient(160deg,#9cf06a,#3da61f)'
+};
+
+/* ================= app predefinite ================= */
+const BUILTIN = [
+  {id:'dash',   name:'Dashboard',     icon:'dash',  color:'dark',   act:{view:'dash'}},
+  {id:'amaps',  name:'Mappe',         icon:'nav',   color:'blue',   act:{url:'maps://'}},
+  {id:'gmaps',  name:'Google Maps',   icon:'pin',   color:'green',  act:{url:'comgooglemaps://'}},
+  {id:'waze',   name:'Waze',          icon:'compass', color:'cyan',   act:{url:'waze://'}},
+  {id:'phone',  name:'Telefono',      icon:'phone', color:'green',  act:{view:'phone'}},
+  {id:'sms',    name:'Messaggi',      icon:'msg',   color:'lime',   act:{url:'sms:'}},
+  {id:'wa',     name:'WhatsApp',      icon:'chat',  color:'green',  act:{url:'whatsapp://'}},
+  {id:'music',  name:'Musica',        icon:'note',  color:'pink',   act:{url:'music://'}},
+  {id:'spotify',name:'Spotify',       icon:'waves', color:'dark',   act:{url:'spotify://'}},
+  {id:'pod',    name:'Podcast',       icon:'mic',   color:'purple', act:{url:'podcasts://'}},
+  {id:'ytm',    name:'YouTube Music', icon:'play',  color:'red',    act:{url:'youtubemusic://'}},
+  {id:'audible',name:'Audible',       icon:'head',  color:'orange', act:{url:'audible://'}},
+  {id:'fuel',   name:'Distributori',  icon:'fuel',  color:'orange', act:{search:'distributore di benzina'}},
+  {id:'ev',     name:'Ricarica',      icon:'bolt',  color:'teal',   act:{search:'colonnina di ricarica'}},
+  {id:'park',   name:'Parcheggi',     icon:'park',  color:'blue',   act:{search:'parcheggio'}},
+  {id:'food',   name:'Ristoranti',    icon:'food',  color:'red',    act:{search:'ristorante'}},
+  {id:'cafe',   name:'Bar e caffè',   icon:'cafe',  color:'yellow', act:{search:'bar caffè'}},
+  {id:'cal',    name:'Calendario',    icon:'cal',   color:'red',    act:{url:'calshow://'}},
+  {id:'set',    name:'Impostazioni',  icon:'gear',  color:'gray',   act:{view:'settings'}}
+];
+const DEFAULT_HIDDEN = ['audible','ytm','cafe'];
+const NAVS = {
+  apple: {name:'Mappe di Apple', dir:a=>'maps://?daddr='+enc(a)+'&dirflg=d', q:s=>'maps://?q='+enc(s)},
+  google:{name:'Google Maps',    dir:a=>'comgooglemaps://?daddr='+enc(a)+'&directionsmode=driving', q:s=>'comgooglemaps://?q='+enc(s)},
+  waze:  {name:'Waze',           dir:a=>'waze://?q='+enc(a)+'&navigate=yes', q:s=>'waze://?q='+enc(s)}
+};
+const WALL = {
+  blu:['#0b2a5c','#06142e'], notte:['#1a1a1a','#0a0a0a'], viola:['#3a1460','#150726'],
+  verde:['#0d3b34','#061a17'], tramonto:['#5c2a0b','#2a0f06'], rosso:['#5c0b1e','#26060c']
+};
+function enc(s){return encodeURIComponent(s.trim())}
+
+/* ================= stato salvato ================= */
+const KEY='icar.v1';
+const DEF = {nav:'apple', h24:true, wake:true, wall:'blu', call:'tel',
+  home:'', work:'', places:[], contacts:[], hidden:DEFAULT_HIDDEN.slice(), custom:[], order:[], recent:['amaps','music','phone']};
+let S;
+try{ S = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY)||'{}')); }catch(e){ S = Object.assign({}, DEF); }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+/* ================= utilità ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let toastT;
+function toast(t){ const e=$('#toast'); e.textContent=t; e.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>e.classList.remove('on'),2200); }
+function openURL(u){
+  try{ window.location.href = u; }catch(e){}
+  setTimeout(()=>{ if(document.visibilityState==='visible') toast('Se non si apre nulla, controlla che l’app sia installata'); }, 1800);
+}
+function allApps(){
+  const custom = S.custom.map(c=>({id:c.id,name:c.name,icon:'link',color:c.color||'gray',act:{url:c.url},custom:true}));
+  const list = BUILTIN.concat(custom);
+  const ord = S.order.filter(id=>list.some(a=>a.id===id));
+  list.forEach(a=>{ if(!ord.includes(a.id)) ord.push(a.id); });
+  return ord.map(id=>list.find(a=>a.id===id));
+}
+const visibleApps = () => allApps().filter(a=>!S.hidden.includes(a.id));
+const appById = id => allApps().find(a=>a.id===id);
+function tileHTML(a){ return '<div class="tile" style="background:'+(G[a.color]||G.gray)+'">'+svg(a.icon)+'</div>'; }
+
+function launch(a){
+  if(!a) return;
+  if(a.id!=='set' && a.id!=='dash'){ S.recent = [a.id].concat(S.recent.filter(x=>x!==a.id)).slice(0,3); save(); renderRecents(); }
+  const act=a.act;
+  if(act.view) return show(act.view);
+  if(act.search) return openURL(NAVS[S.nav].q(act.search));
+  if(act.url) return openURL(act.url);
+}
+function navigateTo(addr){
+  if(!addr||!addr.trim()) return toast('Scrivi prima un indirizzo');
+  openURL(NAVS[S.nav].dir(addr));
+}
+function call(num){
+  const n=String(num).replace(/[^\d+*#]/g,'');
+  if(!n) return toast('Nessun numero');
+  openURL((S.call==='facetime'?'facetime-audio:':'tel:')+n);
+}
+
+/* ================= viste ================= */
+let current='home';
+function show(v){
+  current=v;
+  document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on', e.id===v));
+  $('#toggleView').innerHTML = svg(v==='dash'?'grid':'dash');
+  if(v==='dash') renderDash();
+  if(v==='phone') renderPhone();
+  if(v==='settings') renderSettings();
+  if(v==='home') renderHome();
+  requestWake();
+}
+$('#toggleView').onclick = ()=> show(current==='dash'?'home':'dash');
+document.querySelectorAll('[data-go]').forEach(b=>{ b.innerHTML=svg('back')+'Home'; b.onclick=()=>show(b.dataset.go); });
+
+/* ---------- barra laterale ---------- */
+function renderRecents(){
+  $('#recents').innerHTML = S.recent.map(appById).filter(Boolean).slice(0,3)
+    .map(a=>'<button class="app" data-id="'+a.id+'" aria-label="'+esc(a.name)+'">'+tileHTML(a)+'</button>').join('');
+  $('#recents').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>launch(appById(b.dataset.id)));
+}
+
+/* ---------- home ---------- */
+function renderHome(){
+  const box=$('#pages'); const w=box.clientWidth||900, h=box.clientHeight||600;
+  const cols=Math.max(3,Math.min(6,Math.floor((w-40)/175)));
+  const rows=Math.max(2,Math.min(4,Math.floor((h-30)/185)));
+  const per=cols*rows, apps=visibleApps(), pages=[];
+  for(let i=0;i<apps.length;i+=per) pages.push(apps.slice(i,i+per));
+  box.innerHTML = pages.map(p=>'<div class="page" style="grid-template-columns:repeat('+cols+',1fr);grid-template-rows:repeat('+rows+',auto)">'+
+    p.map(a=>'<button class="app" data-id="'+a.id+'">'+tileHTML(a)+'<span>'+esc(a.name)+'</span></button>').join('')+'</div>').join('');
+  box.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>launch(appById(b.dataset.id)));
+  $('#dots').innerHTML = pages.length>1 ? pages.map((_,i)=>'<i'+(i===0?' class="on"':'')+'></i>').join('') : '';
+  box.scrollLeft=0;
+}
+$('#pages').addEventListener('scroll',()=>{
+  const b=$('#pages'), i=Math.round(b.scrollLeft/b.clientWidth);
+  document.querySelectorAll('#dots i').forEach((d,k)=>d.classList.toggle('on',k===i));
+},{passive:true});
+
+/* ---------- dashboard ---------- */
+const NEAR=[['fuel','Benzina','distributore di benzina'],['bolt','Ricarica','colonnina di ricarica'],['park','Parcheggio','parcheggio'],['food','Mangiare','ristorante']];
+function renderDash(){
+  const d=[];
+  d.push({icon:'house',col:'blue',name:'Casa',addr:S.home,key:'home'});
+  d.push({icon:'brief',col:'orange',name:'Lavoro',addr:S.work,key:'work'});
+  S.places.forEach(p=>d.push({icon:'star',col:'yellow',name:p.name,addr:p.addr}));
+  $('#destList').innerHTML = d.map((x,i)=>'<button class="dest" data-i="'+i+'"><span class="di" style="background:'+G[x.col]+'">'+svg(x.icon)+'</span><div><b>'+esc(x.name)+'</b><small>'+(x.addr?esc(x.addr):'Tocca per impostare')+'</small></div></button>').join('');
+  $('#destList').querySelectorAll('.dest').forEach(b=>b.onclick=()=>{
+    const x=d[+b.dataset.i];
+    if(x.addr) return navigateTo(x.addr);
+    ask('Indirizzo di '+x.name,[{ph:'Via, numero, città'}],v=>{ if(v[0].trim()){ S[x.key]=v[0].trim(); save(); renderDash(); } });
+  });
+  $('#nearby').innerHTML = NEAR.map((n,i)=>'<button data-i="'+i+'">'+svg(n[0])+n[1]+'</button>').join('');
+  $('#nearby').querySelectorAll('button').forEach(b=>b.onclick=()=>openURL(NAVS[S.nav].q(NEAR[+b.dataset.i][2])));
+  const m=['music','spotify','pod','ytm','audible','sms'].map(appById).filter(a=>a&&!S.hidden.includes(a.id)).slice(0,6);
+  $('#mbtns').innerHTML = m.map(a=>'<button class="mbtn" data-id="'+a.id+'">'+tileHTML(a)+esc(a.name)+'</button>').join('');
+  $('#mbtns').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>launch(appById(b.dataset.id)));
+  startGeo();
+}
+$('#navForm').onsubmit = e=>{ e.preventDefault(); navigateTo($('#navInput').value); };
+
+/* ---------- velocità e meteo ---------- */
+let geoOn=false, lastWx=0;
+function startGeo(){
+  if(geoOn || !navigator.geolocation) return; geoOn=true;
+  try{
+    navigator.geolocation.watchPosition(p=>{
+      const sp=p.coords.speed;
+      $('#speed').textContent = (sp!=null && sp>=0) ? Math.round(sp*3.6) : '0';
+      if(Date.now()-lastWx>15*60*1000){ lastWx=Date.now(); weather(p.coords.latitude,p.coords.longitude); }
+    },()=>{ $('#speed').textContent='--'; },{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
+  }catch(e){}
+}
+const WX=[[0,'☀️','Sereno'],[2,'🌤️','Poco nuvoloso'],[3,'☁️','Nuvoloso'],[48,'🌫️','Nebbia'],[57,'🌦️','Pioviggine'],[67,'🌧️','Pioggia'],[77,'❄️','Neve'],[82,'🌧️','Rovesci'],[86,'🌨️','Neve'],[99,'⛈️','Temporale']];
+function weather(lat,lon){
+  fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(3)+'&longitude='+lon.toFixed(3)+'&current=temperature_2m,weather_code')
+   .then(r=>r.json()).then(j=>{
+     const t=Math.round(j.current.temperature_2m), c=j.current.weather_code;
+     const w=WX.find(x=>c<=x[0])||WX[0];
+     $('#wxIcon').textContent=w[1]; $('#wxTemp').textContent=t+'°'; $('#wxDesc').textContent=w[2]; $('#sideTemp').textContent=w[1]+' '+t+'°';
+   }).catch(()=>{});
+}
+
+/* ---------- telefono ---------- */
+let phTab='favs', kp='';
+document.querySelectorAll('[data-ph]').forEach(b=>b.onclick=()=>{ phTab=b.dataset.ph; renderPhone(); });
+function renderPhone(){
+  document.querySelectorAll('[data-ph]').forEach(b=>b.classList.toggle('on',b.dataset.ph===phTab));
+  $('#favs').style.display = phTab==='favs'?'grid':'none';
+  $('#keypad').style.display = phTab==='keypad'?'flex':'none';
+  const c=S.contacts;
+  $('#favs').innerHTML = c.map((x,i)=>'<button class="fav" data-i="'+i+'"><span class="avatar">'+esc((x.name||'?').trim().charAt(0).toUpperCase())+'</span><div><b>'+esc(x.name)+'</b><small>'+esc(x.num)+'</small></div></button>').join('')
+    + '<button class="fav" id="addFav"><span class="avatar" style="background:var(--accent)">+</span><div><b>Aggiungi</b><small>Nuovo preferito</small></div></button>';
+  $('#favs').querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>call(c[+b.dataset.i].num));
+  $('#addFav').onclick=addContact;
+  $('#kpNum').textContent=kp;
+}
+function addContact(){
+  ask('Nuovo contatto preferito',[{ph:'Nome'},{ph:'Numero di telefono',type:'tel'}],v=>{
+    if(v[0].trim()&&v[1].trim()){ S.contacts.push({name:v[0].trim(),num:v[1].trim()}); save(); if(current==='phone')renderPhone(); else renderSettings(); }
+  });
+}
+$('#kpGrid').innerHTML = [['1',''],['2','ABC'],['3','DEF'],['4','GHI'],['5','JKL'],['6','MNO'],['7','PQRS'],['8','TUV'],['9','WXYZ'],['*',''],['0','+'],['#','']]
+  .map(k=>'<button class="key" data-k="'+k[0]+'">'+k[0]+'<small>'+k[1]+'</small></button>').join('');
+$('#kpGrid').querySelectorAll('.key').forEach(b=>{
+  let t; b.onpointerdown=()=>{ t=setTimeout(()=>{ if(b.dataset.k==='0'){kp+='+';$('#kpNum').textContent=kp;t=null;} },600); };
+  b.onclick=()=>{ if(t===null) return; clearTimeout(t); kp+=b.dataset.k; $('#kpNum').textContent=kp; };
+});
+$('#kpCall').innerHTML=svg('phone'); $('#kpCall').onclick=()=>call(kp);
+$('#kpDel').onclick=()=>{ kp=kp.slice(0,-1); $('#kpNum').textContent=kp; };
+
+/* ---------- finestra di inserimento ---------- */
+function ask(title, fields, cb, okLabel){
+  const box=$('#modalBox');
+  box.innerHTML='<h4>'+esc(title)+'</h4>'+fields.map((f,i)=>'<input id="mf'+i+'" type="'+(f.type||'text')+'" placeholder="'+esc(f.ph)+'" value="'+esc(f.val||'')+'">').join('')+
+    '<div class="acts"><button class="btn" id="mCancel">Annulla</button><button class="btn blue" id="mOk">'+(okLabel||'Salva')+'</button></div>';
+  $('#modal').classList.add('on');
+  setTimeout(()=>{ const f=$('#mf0'); if(f) f.focus(); },50);
+  $('#mCancel').onclick=()=>$('#modal').classList.remove('on');
+  $('#mOk').onclick=()=>{ const v=fields.map((_,i)=>$('#mf'+i).value); $('#modal').classList.remove('on'); cb(v); };
+}
+
+/* ---------- impostazioni ---------- */
+function sw(id,on){ return '<label class="sw"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span></span></label>'; }
+function renderSettings(){
+  const apps=allApps();
+  let h='';
+  h+='<div class="gtitle">Navigazione</div><div class="group">';
+  h+='<div class="row"><label>Navigatore preferito</label><select id="sNav">'+Object.keys(NAVS).map(k=>'<option value="'+k+'"'+(S.nav===k?' selected':'')+'>'+NAVS[k].name+'</option>').join('')+'</select></div>';
+  h+='<div class="row"><span class="mini" style="background:'+G.blue+'">'+svg('house')+'</span><label>Casa</label><input type="text" id="sHome" value="'+esc(S.home)+'" placeholder="Indirizzo di casa"></div>';
+  h+='<div class="row"><span class="mini" style="background:'+G.orange+'">'+svg('brief')+'</span><label>Lavoro</label><input type="text" id="sWork" value="'+esc(S.work)+'" placeholder="Indirizzo del lavoro"></div>';
+  S.places.forEach((p,i)=>{ h+='<div class="row"><span class="mini" style="background:'+G.yellow+'">'+svg('star')+'</span><label>'+esc(p.name)+'<br><small style="color:var(--dim)">'+esc(p.addr)+'</small></label><button class="btn red" data-delp="'+i+'">Elimina</button></div>'; });
+  h+='<div class="row"><label>Altri luoghi preferiti</label><button class="btn" id="addPlace">+ Aggiungi luogo</button></div></div>';
+
+  h+='<div class="gtitle">Telefono</div><div class="group">';
+  h+='<div class="row"><label>Chiama con</label><select id="sCall"><option value="tel"'+(S.call==='tel'?' selected':'')+'>Telefono (tramite iPhone)</option><option value="facetime"'+(S.call==='facetime'?' selected':'')+'>FaceTime audio</option></select></div>';
+  S.contacts.forEach((c,i)=>{ h+='<div class="row"><span class="mini" style="background:'+G.gray+'">'+svg('user')+'</span><label>'+esc(c.name)+'<br><small style="color:var(--dim)">'+esc(c.num)+'</small></label><button class="btn red" data-delc="'+i+'">Elimina</button></div>'; });
+  h+='<div class="row"><label>Contatti preferiti</label><button class="btn" id="addC">+ Aggiungi contatto</button></div></div>';
+
+  h+='<div class="gtitle">App nella schermata Home</div><div class="note">Accendi o spegni le app, e usa le frecce per cambiare l’ordine.</div><div class="group">';
+  apps.forEach((a,i)=>{
+    h+='<div class="row"><span class="mini" style="background:'+(G[a.color]||G.gray)+'">'+svg(a.icon)+'</span><label>'+esc(a.name)+'</label>'+
+      '<button class="btn" data-up="'+i+'"'+(i===0?' disabled style="opacity:.3"':'')+'>▲</button><button class="btn" data-dn="'+i+'"'+(i===apps.length-1?' disabled style="opacity:.3"':'')+'>▼</button>'+
+      (a.custom?'<button class="btn red" data-delapp="'+a.id+'">Elimina</button>':'')+
+      (a.id==='set'?'':sw('vis_'+a.id,!S.hidden.includes(a.id)))+'</div>';
+  });
+  h+='<div class="row"><label>App aggiuntiva<br><small style="color:var(--dim)">Serve il suo link (es. <b>instagram://</b>)</small></label><button class="btn" id="addApp">+ Aggiungi app</button></div></div>';
+
+  h+='<div class="gtitle">Schermo</div><div class="group">';
+  h+='<div class="row"><label>Sfondo</label><div class="wps">'+Object.keys(WALL).map(k=>'<button data-wall="'+k+'" class="'+(S.wall===k?'on':'')+'" style="background:linear-gradient(160deg,'+WALL[k][0]+','+WALL[k][1]+')" aria-label="'+k+'"></button>').join('')+'</div></div>';
+  h+='<div class="row"><label>Orologio 24 ore</label>'+sw('s24',S.h24)+'</div>';
+  h+='<div class="row"><label>Tieni lo schermo acceso</label>'+sw('sWake',S.wake)+'</div></div>';
+
+  h+='<div class="gtitle">Ripristino</div><div class="group"><div class="row"><label>Riporta tutto come all’inizio</label><button class="btn red" id="reset">Ripristina</button></div></div>';
+  $('#setBody').innerHTML=h;
+
+  $('#sNav').onchange=e=>{S.nav=e.target.value;save();};
+  $('#sCall').onchange=e=>{S.call=e.target.value;save();};
+  $('#sHome').onchange=e=>{S.home=e.target.value.trim();save();};
+  $('#sWork').onchange=e=>{S.work=e.target.value.trim();save();};
+  $('#addPlace').onclick=()=>ask('Nuovo luogo preferito',[{ph:'Nome (es. Palestra)'},{ph:'Indirizzo'}],v=>{ if(v[0].trim()&&v[1].trim()){S.places.push({name:v[0].trim(),addr:v[1].trim()});save();renderSettings();} });
+  $('#addC').onclick=addContact;
+  $('#addApp').onclick=()=>ask('Nuova app',[{ph:'Nome (es. Instagram)'},{ph:'Link (es. instagram://)'}],v=>{
+    let u=v[1].trim(); if(!v[0].trim()||!u) return;
+    if(!/^[a-z][a-z0-9+.-]*:/i.test(u)) u=u.replace(/[^a-z0-9+.-]/gi,'')+'://';
+    const cols=Object.keys(G); S.custom.push({id:'c'+Date.now(),name:v[0].trim(),url:u,color:cols[S.custom.length%cols.length]}); save(); renderSettings();
+  });
+  document.querySelectorAll('[data-delp]').forEach(b=>b.onclick=()=>{S.places.splice(+b.dataset.delp,1);save();renderSettings();});
+  document.querySelectorAll('[data-delc]').forEach(b=>b.onclick=()=>{S.contacts.splice(+b.dataset.delc,1);save();renderSettings();});
+  document.querySelectorAll('[data-delapp]').forEach(b=>b.onclick=()=>{S.custom=S.custom.filter(c=>c.id!==b.dataset.delapp);save();renderSettings();});
+  const move=(i,d)=>{ const ids=allApps().map(a=>a.id); const j=i+d; [ids[i],ids[j]]=[ids[j],ids[i]]; S.order=ids; save(); renderSettings(); };
+  document.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>move(+b.dataset.up,-1));
+  document.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>move(+b.dataset.dn,1));
+  apps.forEach(a=>{ const e=document.getElementById('vis_'+a.id); if(e) e.onchange=()=>{ S.hidden=S.hidden.filter(x=>x!==a.id); if(!e.checked) S.hidden.push(a.id); save(); }; });
+  document.querySelectorAll('[data-wall]').forEach(b=>b.onclick=()=>{S.wall=b.dataset.wall;save();applyWall();renderSettings();});
+  $('#s24').onchange=e=>{S.h24=e.target.checked;save();tick();};
+  $('#sWake').onchange=e=>{S.wake=e.target.checked;save();if(S.wake)requestWake();else releaseWake();};
+  $('#reset').onclick=()=>ask('Ripristinare tutto? Scrivi SI per confermare',[{ph:'SI'}],v=>{ if(v[0].trim().toUpperCase()==='SI'){ S=Object.assign({},DEF,{hidden:DEFAULT_HIDDEN.slice(),places:[],contacts:[],custom:[],order:[]}); save(); applyWall(); renderRecents(); renderSettings(); toast('Ripristinato'); } },'Conferma');
+}
+function applyWall(){ const w=WALL[S.wall]||WALL.blu; document.documentElement.style.setProperty('--wp1',w[0]); document.documentElement.style.setProperty('--wp2',w[1]); }
+
+/* ---------- schermo sempre acceso ---------- */
+let wl=null;
+async function requestWake(){
+  if(!S.wake || wl || !('wakeLock' in navigator)) return;
+  try{ wl=await navigator.wakeLock.request('screen'); wl.addEventListener('release',()=>{wl=null;}); }catch(e){ wl=null; }
+}
+function releaseWake(){ if(wl){ try{wl.release();}catch(e){} wl=null; } }
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') requestWake(); });
+document.addEventListener('click',requestWake,{passive:true});
+
+/* ---------- orologio ---------- */
+const GIORNI=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+function tick(){
+  const d=new Date(); let h=d.getHours(); const m=String(d.getMinutes()).padStart(2,'0');
+  if(!S.h24){ h=h%12||12; }
+  $('#sideClock').textContent=h+':'+m; $('#clockBig').textContent=h+':'+m;
+  $('#dateBig').textContent=GIORNI[d.getDay()]+' '+d.getDate()+' '+MESI[d.getMonth()];
+}
+
+/* ---------- avvio ---------- */
+applyWall(); tick(); setInterval(tick,10000);
+renderRecents(); show('home');
+let rz; window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(current==='home') renderHome(); },150); });
+})();
+</script>
+</body>
+</html>
