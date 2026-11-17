@@ -65,36 +65,51 @@ svg{display:block}
 
 /* ---------- dashboard ---------- */
 #dash{display:none;padding:12px;gap:12px}
-#dash.on{display:grid;grid-template-columns:1.35fr 1fr;grid-template-rows:1fr 1fr}
+#dash.on{display:grid;grid-template-columns:1.6fr 1fr;grid-template-rows:auto 1fr}
 .card{background:rgba(28,28,30,.92);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
 .card h3{font-size:15px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
-#cardNav{grid-row:1/3}
-.searchRow{display:flex;gap:10px;margin-bottom:14px}
-.searchRow input{flex:1;background:var(--panel2);border:0;border-radius:14px;padding:16px 18px;font-size:19px;outline:none}
-.searchRow button{background:var(--accent);border-radius:14px;padding:0 20px;font-weight:600;font-size:18px}
-.destList{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
-.dest{display:flex;align-items:center;gap:16px;background:var(--panel2);border-radius:16px;padding:14px 16px;text-align:left;width:100%}
-.dest:active{background:#3a3a3c}
-.dest .di{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;flex:none}
-.dest .di svg{width:24px;height:24px}
-.dest b{display:block;font-size:19px;font-weight:600}
-.dest small{display:block;font-size:14px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.dest div{min-width:0;flex:1}
-.nearby{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
-.nearby button{background:var(--panel2);border-radius:16px;padding:12px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:14px}
-.nearby button:active{background:#3a3a3c}
-.nearby svg{width:28px;height:28px}
+
+/* mappa dal vivo */
+#cardMap{grid-row:1/3;padding:0;position:relative;background:#15171a}
+#mapBox{position:absolute;inset:0}
+#mapBox iframe{position:absolute;inset:-40px 0 -40px 0;width:100%;height:calc(100% + 80px);border:0;pointer-events:none;opacity:0;transition:opacity .6s}
+#mapBox iframe.on{opacity:1}
+body.night #mapBox iframe{filter:invert(.92) hue-rotate(180deg) brightness(.92) contrast(.88)}
+#mapTap{position:absolute;inset:0;z-index:1}
+#mapMsg{position:absolute;inset:0;display:grid;place-items:center;color:var(--dim);font-size:17px;line-height:1.5;text-align:center;padding:90px 40px 120px;z-index:1;pointer-events:none}
+#mapMsg svg{width:54px;height:54px;margin:0 auto 12px;stroke:var(--dim)}
+.mapTop{position:absolute;left:14px;right:14px;top:14px;z-index:2}
+.searchRow{display:flex;gap:10px}
+.searchRow input{flex:1;min-width:0;background:rgba(28,28,30,.94);border:0;border-radius:16px;padding:16px 18px;font-size:19px;outline:none;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.searchRow button{background:var(--accent);border-radius:16px;padding:0 22px;font-weight:600;font-size:18px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.chips{position:absolute;left:0;right:0;bottom:0;padding:14px;display:flex;gap:10px;overflow-x:auto;z-index:2;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;align-items:center;gap:12px;background:rgba(28,28,30,.95);border-radius:18px;padding:10px 18px 10px 10px;text-align:left;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.chip:active{background:#3a3a3c}
+.chip .di{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none}
+.chip .di svg{width:23px;height:23px}
+.chip b{display:block;font-size:17px;font-weight:600;white-space:nowrap}
+.chip small{display:block;font-size:13px;color:var(--dim);white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.chip.sm{padding:10px}
+.chip.sm .di{background:var(--panel2)}
 
 #cardMusic .mbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:10px;flex:1;align-content:center}
 .mbtn{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:15px}
 .mbtn .tile{width:72px}
 
-#cardInfo{flex-direction:row;align-items:center;justify-content:space-around;gap:10px}
-.big{font-size:56px;font-weight:700;letter-spacing:-2px;font-variant-numeric:tabular-nums;line-height:1}
-.unit{font-size:15px;color:var(--dim);text-align:center;margin-top:6px}
-#wxIcon{font-size:44px;line-height:1;text-align:center}
-#wxTemp{font-size:34px;font-weight:600;text-align:center}
-#dateBig{font-size:15px;color:var(--dim);text-align:center}
+#cardInfo{flex-direction:row;align-items:center;justify-content:space-around;gap:6px;padding:18px 12px}
+.big{font-size:46px;font-weight:700;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;line-height:1;text-align:center}
+.unit{font-size:14px;color:var(--dim);text-align:center;margin-top:6px;white-space:nowrap}
+#speedBox{border-radius:18px;padding:8px 12px;transition:background .2s}
+#speedBox.over{background:var(--red)}
+#speedBox.over .unit{color:#fff}
+#wxIcon{font-size:36px;line-height:1;text-align:center}
+#wxTemp{font-size:28px;font-weight:600;text-align:center}
+#dateBig{font-size:14px;color:var(--dim);text-align:center}
+
+/* notte: schermo più scuro */
+#dimLayer{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:60;transition:opacity 1.5s}
+body.night.dim #dimLayer{opacity:.3}
 
 /* ---------- telefono ---------- */
 .topbar{display:flex;align-items:center;gap:12px;padding:16px 20px 6px}
@@ -106,8 +121,13 @@ svg{display:block}
 .seg button.on{background:#636366;color:#fff}
 #phoneBody{flex:1;min-height:0;padding:10px 20px 20px;display:flex}
 #favs{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;align-content:start;overflow-y:auto}
-.fav{background:rgba(44,44,46,.95);border-radius:18px;padding:18px;display:flex;align-items:center;gap:14px;text-align:left}
-.fav:active{background:#48484a}
+.fav{background:rgba(44,44,46,.95);border-radius:18px;display:flex;align-items:center;overflow:hidden}
+.favMain{flex:1;min-width:0;display:flex;align-items:center;gap:14px;text-align:left;padding:18px}
+.favMain div{min-width:0}
+.favMain small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.favMain:active,.favMsg:active{background:#48484a}
+.favMsg{width:64px;align-self:stretch;display:grid;place-items:center;border-left:1px solid var(--line)}
+.favMsg svg{width:26px;height:26px;stroke:var(--green)}
 .avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(#8e8e93,#636366);display:grid;place-items:center;font-size:22px;font-weight:600;flex:none}
 .fav b{font-size:19px;display:block}
 .fav small{color:var(--dim);font-size:14px}
@@ -164,8 +184,8 @@ svg{display:block}
   #side{width:auto;height:96px;flex-direction:row;padding:0 16px;gap:16px}
   #sideStatus{margin:0;flex-direction:column}
   #recents{flex-direction:row}
-  #dash.on{grid-template-columns:1fr;grid-template-rows:1.5fr .8fr .7fr}
-  #cardNav{grid-row:auto}
+  #dash.on{grid-template-columns:1fr;grid-template-rows:1.6fr auto .8fr}
+  #cardMap{grid-row:auto}
   #keypad{flex-direction:column;gap:10px}
 }
 </style>
@@ -186,23 +206,26 @@ svg{display:block}
     </section>
 
     <section class="view" id="dash">
-      <div class="card" id="cardNav">
-        <h3>Dove vuoi andare?</h3>
-        <form class="searchRow" id="navForm">
-          <input id="navInput" type="text" placeholder="Indirizzo o luogo" autocomplete="off">
-          <button type="submit">Vai</button>
-        </form>
-        <div class="destList" id="destList"></div>
-        <div class="nearby" id="nearby"></div>
+      <div class="card" id="cardMap">
+        <div id="mapBox"></div>
+        <div id="mapMsg"></div>
+        <button id="mapTap" aria-label="Apri il navigatore"></button>
+        <div class="mapTop">
+          <form class="searchRow" id="navForm">
+            <input id="navInput" type="text" placeholder="Dove vuoi andare?" autocomplete="off">
+            <button type="submit">Vai</button>
+          </form>
+        </div>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="card" id="cardInfo">
+        <div><div class="big" id="clockBig">--:--</div><div class="unit" id="dateBig"></div></div>
+        <div id="speedBox"><div class="big" id="speed">--</div><div class="unit" id="speedUnit">km/h</div></div>
+        <div><div id="wxIcon"></div><div id="wxTemp">--°</div><div class="unit" id="wxDesc">Meteo</div></div>
       </div>
       <div class="card" id="cardMusic">
         <h3>Audio</h3>
         <div class="mbtns" id="mbtns"></div>
-      </div>
-      <div class="card" id="cardInfo">
-        <div><div class="big" id="clockBig">--:--</div><div class="unit" id="dateBig"></div></div>
-        <div><div class="big" id="speed">--</div><div class="unit">km/h</div></div>
-        <div><div id="wxIcon"></div><div id="wxTemp">--°</div><div class="unit" id="wxDesc">Meteo</div></div>
       </div>
     </section>
 
@@ -234,6 +257,7 @@ svg{display:block}
     </section>
   </main>
 </div>
+<div id="dimLayer"></div>
 <div id="toast"></div>
 <div id="modal"><div id="modalBox"></div></div>
 
@@ -274,7 +298,10 @@ const P = {
   video:'<rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="m16 10.5 6-3.5v10l-6-3.5"/>',
   book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5"/>',
   camera:'<rect x="2.5" y="6" width="19" height="14" rx="3"/><circle cx="12" cy="13" r="3.8"/><path d="M8.5 6 10 3.5h4L15.5 6"/>',
-  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  layers:'<path d="m12 2.5 9.5 5-9.5 5-9.5-5z"/><path d="m2.5 12 9.5 5 9.5-5M2.5 16.5l9.5 5 9.5-5"/>',
+  car:'<path d="M5 17.5h14M3.5 17.5v-4.2l2-5.3a2 2 0 0 1 1.9-1.3h9.2a2 2 0 0 1 1.9 1.3l2 5.3v4.2"/><path d="M3.5 13.3h17"/><circle cx="7.5" cy="17.5" r="2"/><circle cx="16.5" cy="17.5" r="2"/>',
+  map:'<path d="M9 3.5 3 6v14.5l6-2.5 6 2.5 6-2.5V3.5L15 6z"/><path d="M9 3.5V18M15 6v14.5"/>'
 };
 const svg = (k, cls) => '<svg viewBox="0 0 24 24" class="ico '+(cls||'')+'">'+(P[k]||P.link)+'</svg>';
 const G = {
@@ -306,13 +333,14 @@ const BUILTIN = [
   {id:'food',   name:'Ristoranti',    icon:'food',  color:'red',    act:{search:'ristorante'}},
   {id:'cafe',   name:'Bar e caffè',   icon:'cafe',  color:'yellow', act:{search:'bar caffè'}},
   {id:'cal',    name:'Calendario',    icon:'cal',   color:'red',    act:{url:'calshow://'}},
+  {id:'shortcuts',name:'Comandi rapidi',icon:'layers',color:'purple',act:{url:'shortcuts://'}},
   {id:'set',    name:'Impostazioni',  icon:'gear',  color:'gray',   act:{view:'settings'}}
 ];
 const DEFAULT_HIDDEN = ['audible','ytm','cafe'];
 const NAVS = {
-  apple: {name:'Mappe di Apple', dir:a=>'maps://?daddr='+enc(a)+'&dirflg=d', q:s=>'maps://?q='+enc(s)},
-  google:{name:'Google Maps',    dir:a=>'comgooglemaps://?daddr='+enc(a)+'&directionsmode=driving', q:s=>'comgooglemaps://?q='+enc(s)},
-  waze:  {name:'Waze',           dir:a=>'waze://?q='+enc(a)+'&navigate=yes', q:s=>'waze://?q='+enc(s)}
+  apple: {name:'Mappe di Apple', dir:a=>'maps://?daddr='+enc(a)+'&dirflg=d', q:s=>'maps://?q='+enc(s), ll:(la,lo)=>'maps://?daddr='+la+','+lo+'&dirflg=w', open:'maps://'},
+  google:{name:'Google Maps',    dir:a=>'comgooglemaps://?daddr='+enc(a)+'&directionsmode=driving', q:s=>'comgooglemaps://?q='+enc(s), ll:(la,lo)=>'comgooglemaps://?daddr='+la+','+lo+'&directionsmode=walking', open:'comgooglemaps://'},
+  waze:  {name:'Waze',           dir:a=>'waze://?q='+enc(a)+'&navigate=yes', q:s=>'waze://?q='+enc(s), ll:(la,lo)=>'waze://?ll='+la+','+lo+'&navigate=yes', open:'waze://'}
 };
 const WALL = {
   blu:['#0b2a5c','#06142e'], notte:['#1a1a1a','#0a0a0a'], viola:['#3a1460','#150726'],
@@ -323,7 +351,8 @@ function enc(s){return encodeURIComponent(s.trim())}
 /* ================= stato salvato ================= */
 const KEY='icar.v1';
 const DEF = {nav:'apple', h24:true, wake:true, wall:'blu', call:'tel',
-  home:'', work:'', places:[], contacts:[], hidden:DEFAULT_HIDDEN.slice(), custom:[], order:[], recent:['amaps','music','phone']};
+  home:'', work:'', places:[], contacts:[], hidden:DEFAULT_HIDDEN.slice(), custom:[], order:[], recent:['amaps','music','phone'],
+  start:'dash', map:true, night:'auto', dim:true, limit:0, beep:true, parked:null};
 let S;
 try{ S = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY)||'{}')); }catch(e){ S = Object.assign({}, DEF); }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
@@ -338,7 +367,7 @@ function openURL(u){
   setTimeout(()=>{ if(document.visibilityState==='visible') toast('Se non si apre nulla, controlla che l’app sia installata'); }, 1800);
 }
 function allApps(){
-  const custom = S.custom.map(c=>({id:c.id,name:c.name,icon:'link',color:c.color||'gray',act:{url:c.url},custom:true}));
+  const custom = S.custom.map(c=>({id:c.id,name:c.name,icon:c.icon||'link',color:c.color||'gray',act:{url:c.url},custom:true}));
   const list = BUILTIN.concat(custom);
   const ord = S.order.filter(id=>list.some(a=>a.id===id));
   list.forEach(a=>{ if(!ord.includes(a.id)) ord.push(a.id); });
@@ -407,48 +436,126 @@ $('#pages').addEventListener('scroll',()=>{
 },{passive:true});
 
 /* ---------- dashboard ---------- */
-const NEAR=[['fuel','Benzina','distributore di benzina'],['bolt','Ricarica','colonnina di ricarica'],['park','Parcheggio','parcheggio'],['food','Mangiare','ristorante']];
+const NEAR=[['fuel','Benzina','distributore di benzina'],['bolt','Ricarica','colonnina di ricarica'],['park','Parcheggi','parcheggio'],['food','Mangiare','ristorante']];
 function renderDash(){
   const d=[];
   d.push({icon:'house',col:'blue',name:'Casa',addr:S.home,key:'home'});
   d.push({icon:'brief',col:'orange',name:'Lavoro',addr:S.work,key:'work'});
   S.places.forEach(p=>d.push({icon:'star',col:'yellow',name:p.name,addr:p.addr}));
-  $('#destList').innerHTML = d.map((x,i)=>'<button class="dest" data-i="'+i+'"><span class="di" style="background:'+G[x.col]+'">'+svg(x.icon)+'</span><div><b>'+esc(x.name)+'</b><small>'+(x.addr?esc(x.addr):'Tocca per impostare')+'</small></div></button>').join('');
-  $('#destList').querySelectorAll('.dest').forEach(b=>b.onclick=()=>{
-    const x=d[+b.dataset.i];
+  const pk=S.parked;
+  let h = d.map((x,i)=>'<button class="chip" data-d="'+i+'"><span class="di" style="background:'+G[x.col]+'">'+svg(x.icon)+'</span><div><b>'+esc(x.name)+'</b><small>'+(x.addr?esc(x.addr):'Tocca per impostare')+'</small></div></button>').join('');
+  h += '<button class="chip" id="parkChip"><span class="di" style="background:'+G.teal+'">'+svg('car')+'</span><div><b>'+(pk?'Torna all’auto':'Salva parcheggio')+'</b><small>'+(pk?'Salvata alle '+esc(pk.time):'Ricorda dove lasci l’auto')+'</small></div></button>';
+  h += NEAR.map((n,i)=>'<button class="chip sm" data-n="'+i+'" aria-label="'+n[1]+'"><span class="di">'+svg(n[0])+'</span><b style="padding-right:8px">'+n[1]+'</b></button>').join('');
+  $('#chips').innerHTML = h;
+  $('#chips').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{
+    const x=d[+b.dataset.d];
     if(x.addr) return navigateTo(x.addr);
     ask('Indirizzo di '+x.name,[{ph:'Via, numero, città'}],v=>{ if(v[0].trim()){ S[x.key]=v[0].trim(); save(); renderDash(); } });
   });
-  $('#nearby').innerHTML = NEAR.map((n,i)=>'<button data-i="'+i+'">'+svg(n[0])+n[1]+'</button>').join('');
-  $('#nearby').querySelectorAll('button').forEach(b=>b.onclick=()=>openURL(NAVS[S.nav].q(NEAR[+b.dataset.i][2])));
+  $('#chips').querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>openURL(NAVS[S.nav].q(NEAR[+b.dataset.n][2])));
+  $('#parkChip').onclick=parking;
   const m=['music','spotify','pod','ytm','audible','sms'].map(appById).filter(a=>a&&!S.hidden.includes(a.id)).slice(0,6);
   $('#mbtns').innerHTML = m.map(a=>'<button class="mbtn" data-id="'+a.id+'">'+tileHTML(a)+esc(a.name)+'</button>').join('');
   $('#mbtns').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>launch(appById(b.dataset.id)));
+  $('#speedUnit').textContent = 'km/h'+(S.limit?' · avviso '+S.limit:'');
   startGeo();
+  lastMap=null; drawMap();
 }
 $('#navForm').onsubmit = e=>{ e.preventDefault(); navigateTo($('#navInput').value); };
+$('#mapTap').onclick = ()=> openURL(NAVS[S.nav].open);
 
-/* ---------- velocità e meteo ---------- */
-let geoOn=false, lastWx=0;
+/* ---------- parcheggio ---------- */
+function parking(){
+  const pk=S.parked;
+  const saveHere=()=>{
+    if(!pos) return toast('Posizione non ancora disponibile: attendi qualche secondo');
+    const d=new Date();
+    S.parked={lat:+pos.lat.toFixed(6),lon:+pos.lon.toFixed(6),time:d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
+    save(); renderDash(); toast('Posizione dell’auto salvata');
+  };
+  if(!pk) return saveHere();
+  choose('Auto parcheggiata alle '+pk.time,[
+    ['Portami all’auto','blue',()=>openURL(NAVS[S.nav].ll(pk.lat,pk.lon))],
+    ['Salva la posizione attuale','',saveHere],
+    ['Dimentica','red',()=>{S.parked=null;save();renderDash();}]
+  ]);
+}
+
+/* ---------- posizione, velocità, mappa ---------- */
+let geoOn=false, lastWx=0, pos=null, lastMap=null, lastMapT=0, lastBeep=0;
 function startGeo(){
-  if(geoOn || !navigator.geolocation) return; geoOn=true;
+  if(geoOn) return;
+  if(!navigator.geolocation){ mapMsg('Questo dispositivo non fornisce la posizione'); return; }
+  geoOn=true;
+  if(!pos) mapMsg('Cerco la tua posizione…<br><small>Se te lo chiede, tocca “Consenti”.</small>');
   try{
     navigator.geolocation.watchPosition(p=>{
-      const sp=p.coords.speed;
-      $('#speed').textContent = (sp!=null && sp>=0) ? Math.round(sp*3.6) : '0';
-      if(Date.now()-lastWx>15*60*1000){ lastWx=Date.now(); weather(p.coords.latitude,p.coords.longitude); }
-    },()=>{ $('#speed').textContent='--'; },{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
+      const sp=p.coords.speed, kmh=(sp!=null && sp>=0) ? Math.round(sp*3.6) : 0;
+      pos={lat:p.coords.latitude, lon:p.coords.longitude, kmh:kmh};
+      $('#speed').textContent = kmh;
+      const over = S.limit && kmh > S.limit+2;
+      $('#speedBox').classList.toggle('over', !!over);
+      if(over && S.beep && Date.now()-lastBeep>8000){ lastBeep=Date.now(); beep(); }
+      if(Date.now()-lastWx>15*60*1000){ lastWx=Date.now(); weather(pos.lat,pos.lon); }
+      drawMap();
+    },err=>{
+      $('#speed').textContent='--'; geoOn=false;
+      mapMsg(err && err.code===1 ? 'Posizione non consentita.<br><small>Impostazioni dell’iPad → Privacy → Localizzazione → Siti di Safari → Consenti.</small>' : 'Posizione non disponibile');
+    },{enableHighAccuracy:true,maximumAge:1000,timeout:30000});
   }catch(e){}
 }
+function mapMsg(t){ const m=$('#mapMsg'); m.style.display=t?'grid':'none'; m.innerHTML=t?'<div>'+svg('map')+t+'</div>':''; }
+function km(a,b){ const R=6371, dl=(b.lat-a.lat)*Math.PI/180, dn=(b.lon-a.lon)*Math.PI/180;
+  const x=Math.sin(dl/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dn/2)**2; return 2*R*Math.asin(Math.sqrt(x)); }
+function drawMap(){
+  if(!S.map){ $('#mapBox').innerHTML=''; mapMsg('Mappa spenta<br><small>Puoi accenderla in Impostazioni.</small>'); return; }
+  if(current!=='dash' || !pos) return;
+  const far = pos.kmh>60 ? .5 : .2;
+  if(lastMap && km(lastMap,pos)<far && Date.now()-lastMapT<90000) return;
+  if(lastMap && Date.now()-lastMapT<8000) return;
+  lastMap={lat:pos.lat,lon:pos.lon}; lastMapT=Date.now();
+  const box=$('#mapBox'), w=box.clientWidth||800, hgt=box.clientHeight||600;
+  const r = pos.kmh>90 ? .03 : pos.kmh>45 ? .013 : .006;
+  const dLon = r*(w/hgt)/Math.cos(pos.lat*Math.PI/180);
+  const f=n=>n.toFixed(5);
+  const src='https://www.openstreetmap.org/export/embed.html?bbox='+f(pos.lon-dLon)+'%2C'+f(pos.lat-r)+'%2C'+f(pos.lon+dLon)+'%2C'+f(pos.lat+r)+'&layer=mapnik&marker='+f(pos.lat)+'%2C'+f(pos.lon);
+  const fr=document.createElement('iframe');
+  fr.setAttribute('loading','eager'); fr.setAttribute('title','Mappa'); fr.src=src;
+  fr.onload=()=>{ fr.classList.add('on'); mapMsg(''); setTimeout(()=>{ box.querySelectorAll('iframe').forEach(o=>{ if(o!==fr) o.remove(); }); },700); };
+  box.appendChild(fr);
+}
+
+/* ---------- avviso sonoro ---------- */
+let actx=null;
+function audio(){ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); }catch(e){} return actx; }
+function beep(){
+  const a=audio(); if(!a) return;
+  try{ [0,.22].forEach(t=>{ const o=a.createOscillator(), g=a.createGain(), s=a.currentTime+t;
+    o.frequency.value=988; g.gain.setValueAtTime(.0001,s); g.gain.exponentialRampToValueAtTime(.35,s+.02); g.gain.exponentialRampToValueAtTime(.0001,s+.18);
+    o.connect(g); g.connect(a.destination); o.start(s); o.stop(s+.2); }); }catch(e){}
+}
+
+/* ---------- meteo e notte ---------- */
 const WX=[[0,'☀️','Sereno'],[2,'🌤️','Poco nuvoloso'],[3,'☁️','Nuvoloso'],[48,'🌫️','Nebbia'],[57,'🌦️','Pioviggine'],[67,'🌧️','Pioggia'],[77,'❄️','Neve'],[82,'🌧️','Rovesci'],[86,'🌨️','Neve'],[99,'⛈️','Temporale']];
+let sun=null;
 function weather(lat,lon){
-  fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(3)+'&longitude='+lon.toFixed(3)+'&current=temperature_2m,weather_code')
+  fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(3)+'&longitude='+lon.toFixed(3)+'&current=temperature_2m,weather_code,is_day&daily=sunrise,sunset&forecast_days=1&timezone=auto')
    .then(r=>r.json()).then(j=>{
      const t=Math.round(j.current.temperature_2m), c=j.current.weather_code;
      const w=WX.find(x=>c<=x[0])||WX[0];
-     $('#wxIcon').textContent=w[1]; $('#wxTemp').textContent=t+'°'; $('#wxDesc').textContent=w[2]; $('#sideTemp').textContent=w[1]+' '+t+'°';
+     const ic = (j.current.is_day===0 && c<=2) ? '🌙' : w[1];
+     $('#wxIcon').textContent=ic; $('#wxTemp').textContent=t+'°'; $('#wxDesc').textContent=w[2]; $('#sideTemp').textContent=ic+' '+t+'°';
+     if(j.daily && j.daily.sunrise){ sun={rise:new Date(j.daily.sunrise[0]).getTime(), set:new Date(j.daily.sunset[0]).getTime()}; applyNight(); }
    }).catch(()=>{});
 }
+function isNight(){
+  if(S.night==='on') return true;
+  if(S.night==='off') return false;
+  const n=Date.now();
+  if(sun && !isNaN(sun.rise) && !isNaN(sun.set) && new Date(sun.rise).toDateString()===new Date().toDateString()) return n<sun.rise || n>sun.set;
+  const h=new Date().getHours(); return h>=19 || h<7;
+}
+function applyNight(){ document.body.classList.toggle('night', isNight()); document.body.classList.toggle('dim', !!S.dim); }
 
 /* ---------- telefono ---------- */
 let phTab='favs', kp='';
@@ -458,9 +565,10 @@ function renderPhone(){
   $('#favs').style.display = phTab==='favs'?'grid':'none';
   $('#keypad').style.display = phTab==='keypad'?'flex':'none';
   const c=S.contacts;
-  $('#favs').innerHTML = c.map((x,i)=>'<button class="fav" data-i="'+i+'"><span class="avatar">'+esc((x.name||'?').trim().charAt(0).toUpperCase())+'</span><div><b>'+esc(x.name)+'</b><small>'+esc(x.num)+'</small></div></button>').join('')
-    + '<button class="fav" id="addFav"><span class="avatar" style="background:var(--accent)">+</span><div><b>Aggiungi</b><small>Nuovo preferito</small></div></button>';
+  $('#favs').innerHTML = c.map((x,i)=>'<div class="fav"><button class="favMain" data-i="'+i+'"><span class="avatar">'+esc((x.name||'?').trim().charAt(0).toUpperCase())+'</span><div><b>'+esc(x.name)+'</b><small>'+esc(x.num)+'</small></div></button><button class="favMsg" data-m="'+i+'" aria-label="Messaggio">'+svg('msg')+'</button></div>').join('')
+    + '<div class="fav"><button class="favMain" id="addFav"><span class="avatar" style="background:var(--accent)">+</span><div><b>Aggiungi</b><small>Nuovo preferito</small></div></button></div>';
   $('#favs').querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>call(c[+b.dataset.i].num));
+  $('#favs').querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{ const n=String(c[+b.dataset.m].num).replace(/[^\d+]/g,''); if(n) openURL('sms:'+n); });
   $('#addFav').onclick=addContact;
   $('#kpNum').textContent=kp;
 }
@@ -488,6 +596,14 @@ function ask(title, fields, cb, okLabel){
   $('#mCancel').onclick=()=>$('#modal').classList.remove('on');
   $('#mOk').onclick=()=>{ const v=fields.map((_,i)=>$('#mf'+i).value); $('#modal').classList.remove('on'); cb(v); };
 }
+function choose(title, opts){
+  const box=$('#modalBox');
+  box.innerHTML='<h4>'+esc(title)+'</h4>'+opts.map((o,i)=>'<button class="btn '+o[1]+'" data-o="'+i+'" style="display:block;width:100%;padding:16px;margin-bottom:10px;font-size:18px">'+esc(o[0])+'</button>').join('')+
+    '<button class="btn" id="mCancel" style="display:block;width:100%;padding:16px;font-size:18px;background:none;color:var(--dim)">Annulla</button>';
+  $('#modal').classList.add('on');
+  $('#mCancel').onclick=()=>$('#modal').classList.remove('on');
+  box.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{ $('#modal').classList.remove('on'); opts[+b.dataset.o][2](); });
+}
 
 /* ---------- impostazioni ---------- */
 function sw(id,on){ return '<label class="sw"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span></span></label>'; }
@@ -501,6 +617,12 @@ function renderSettings(){
   S.places.forEach((p,i)=>{ h+='<div class="row"><span class="mini" style="background:'+G.yellow+'">'+svg('star')+'</span><label>'+esc(p.name)+'<br><small style="color:var(--dim)">'+esc(p.addr)+'</small></label><button class="btn red" data-delp="'+i+'">Elimina</button></div>'; });
   h+='<div class="row"><label>Altri luoghi preferiti</label><button class="btn" id="addPlace">+ Aggiungi luogo</button></div></div>';
 
+  h+='<div class="gtitle">Guida</div><div class="group">';
+  h+='<div class="row"><label>All’apertura mostra</label><select id="sStart"><option value="dash"'+(S.start==='dash'?' selected':'')+'>Dashboard con mappa</option><option value="home"'+(S.start==='home'?' selected':'')+'>Schermata delle app</option></select></div>';
+  h+='<div class="row"><label>Mappa nella Dashboard<br><small style="color:var(--dim)">Usa un po’ di dati dell’hotspot</small></label>'+sw('sMap',S.map)+'</div>';
+  h+='<div class="row"><label>Avviso di velocità</label><select id="sLimit">'+[0,30,50,70,90,110,130].map(v=>'<option value="'+v+'"'+(S.limit===v?' selected':'')+'>'+(v?'Oltre '+v+' km/h':'Spento')+'</option>').join('')+'</select></div>';
+  h+='<div class="row"><label>Suono di avviso</label>'+sw('sBeep',S.beep)+'</div></div>';
+
   h+='<div class="gtitle">Telefono</div><div class="group">';
   h+='<div class="row"><label>Chiama con</label><select id="sCall"><option value="tel"'+(S.call==='tel'?' selected':'')+'>Telefono (tramite iPhone)</option><option value="facetime"'+(S.call==='facetime'?' selected':'')+'>FaceTime audio</option></select></div>';
   S.contacts.forEach((c,i)=>{ h+='<div class="row"><span class="mini" style="background:'+G.gray+'">'+svg('user')+'</span><label>'+esc(c.name)+'<br><small style="color:var(--dim)">'+esc(c.num)+'</small></label><button class="btn red" data-delc="'+i+'">Elimina</button></div>'; });
@@ -513,14 +635,18 @@ function renderSettings(){
       (a.custom?'<button class="btn red" data-delapp="'+a.id+'">Elimina</button>':'')+
       (a.id==='set'?'':sw('vis_'+a.id,!S.hidden.includes(a.id)))+'</div>';
   });
-  h+='<div class="row"><label>App aggiuntiva<br><small style="color:var(--dim)">Serve il suo link (es. <b>instagram://</b>)</small></label><button class="btn" id="addApp">+ Aggiungi app</button></div></div>';
+  h+='<div class="row"><label>App aggiuntiva<br><small style="color:var(--dim)">Serve il suo link (es. <b>instagram://</b>)</small></label><button class="btn" id="addApp">+ Aggiungi app</button></div>';
+  h+='<div class="row"><label>Comando rapido<br><small style="color:var(--dim)">Un tasto che avvia un tuo Comando rapido (es. <b>Auto ON</b>)</small></label><button class="btn" id="addSc">+ Aggiungi comando</button></div></div>';
 
   h+='<div class="gtitle">Schermo</div><div class="group">';
   h+='<div class="row"><label>Sfondo</label><div class="wps">'+Object.keys(WALL).map(k=>'<button data-wall="'+k+'" class="'+(S.wall===k?'on':'')+'" style="background:linear-gradient(160deg,'+WALL[k][0]+','+WALL[k][1]+')" aria-label="'+k+'"></button>').join('')+'</div></div>';
   h+='<div class="row"><label>Orologio 24 ore</label>'+sw('s24',S.h24)+'</div>';
-  h+='<div class="row"><label>Tieni lo schermo acceso</label>'+sw('sWake',S.wake)+'</div></div>';
+  h+='<div class="row"><label>Tieni lo schermo acceso</label>'+sw('sWake',S.wake)+'</div>';
+  h+='<div class="row"><label>Modalità notte<br><small style="color:var(--dim)">Mappa scura dopo il tramonto</small></label><select id="sNight"><option value="auto"'+(S.night==='auto'?' selected':'')+'>Automatica</option><option value="on"'+(S.night==='on'?' selected':'')+'>Sempre</option><option value="off"'+(S.night==='off'?' selected':'')+'>Mai</option></select></div>';
+  h+='<div class="row"><label>Di notte abbassa la luminosità</label>'+sw('sDim',S.dim)+'</div></div>';
 
   h+='<div class="gtitle">Ripristino</div><div class="group"><div class="row"><label>Riporta tutto come all’inizio</label><button class="btn red" id="reset">Ripristina</button></div></div>';
+  h+='<div class="note" style="text-align:center">iCar 2.0</div>';
   $('#setBody').innerHTML=h;
 
   $('#sNav').onchange=e=>{S.nav=e.target.value;save();};
@@ -534,6 +660,16 @@ function renderSettings(){
     if(!/^[a-z][a-z0-9+.-]*:/i.test(u)) u=u.replace(/[^a-z0-9+.-]/gi,'')+'://';
     const cols=Object.keys(G); S.custom.push({id:'c'+Date.now(),name:v[0].trim(),url:u,color:cols[S.custom.length%cols.length]}); save(); renderSettings();
   });
+  $('#addSc').onclick=()=>ask('Nome esatto del Comando rapido',[{ph:'es. Auto ON'}],v=>{
+    const n=v[0].trim(); if(!n) return;
+    S.custom.push({id:'c'+Date.now(),name:n,url:'shortcuts://run-shortcut?name='+enc(n),color:'purple',icon:'layers'}); save(); renderSettings(); toast('Aggiunto alla schermata delle app');
+  });
+  $('#sStart').onchange=e=>{S.start=e.target.value;save();};
+  $('#sMap').onchange=e=>{S.map=e.target.checked;save();};
+  $('#sLimit').onchange=e=>{S.limit=+e.target.value;save();};
+  $('#sBeep').onchange=e=>{S.beep=e.target.checked;save(); if(S.beep) beep();};
+  $('#sNight').onchange=e=>{S.night=e.target.value;save();applyNight();};
+  $('#sDim').onchange=e=>{S.dim=e.target.checked;save();applyNight();};
   document.querySelectorAll('[data-delp]').forEach(b=>b.onclick=()=>{S.places.splice(+b.dataset.delp,1);save();renderSettings();});
   document.querySelectorAll('[data-delc]').forEach(b=>b.onclick=()=>{S.contacts.splice(+b.dataset.delc,1);save();renderSettings();});
   document.querySelectorAll('[data-delapp]').forEach(b=>b.onclick=()=>{S.custom=S.custom.filter(c=>c.id!==b.dataset.delapp);save();renderSettings();});
@@ -566,11 +702,14 @@ function tick(){
   if(!S.h24){ h=h%12||12; }
   $('#sideClock').textContent=h+':'+m; $('#clockBig').textContent=h+':'+m;
   $('#dateBig').textContent=GIORNI[d.getDay()]+' '+d.getDate()+' '+MESI[d.getMonth()];
+  applyNight();
 }
 
 /* ---------- avvio ---------- */
+document.addEventListener('click',()=>{ if(S.beep && S.limit) audio(); },{passive:true});
 applyWall(); tick(); setInterval(tick,10000);
-renderRecents(); show('home');
+renderRecents(); show(S.start==='home'?'home':'dash');
+if('serviceWorker' in navigator && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 let rz; window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(current==='home') renderHome(); },150); });
 })();
 </script>
