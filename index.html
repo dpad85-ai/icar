@@ -686,10 +686,8 @@ const M={z:6,lat:42.5,lon:12.5,follow:true,zManual:false,ox:0,oy:0,tiles:{},styl
 if(S.lastPos){ M.lat=S.lastPos.lat; M.lon=S.lastPos.lon; M.z=15; }
 const mapEl=$('#map'), layer=$('#mapLayer');
 function tileURL(z,x,y){ const n=Math.pow(2,z); x=((x%n)+n)%n;
-  const k=(S.cartoKey||'').trim();
-  if(k) return 'https://basemaps.cartocdn.com/rastertiles/'+(M.style==='night'?'dark_all':'voyager')+'/'+z+'/'+x+'/'+y+'@2x.png?key='+enc(k);
   return 'https://tile.openstreetmap.org/'+z+'/'+x+'/'+y+'.png'; }
-function mapProvider(){ const c=!!(S.cartoKey||'').trim(); layer.classList.toggle('osm',!c); $('#attrib').textContent=c?'© OpenStreetMap · © CARTO':'© OpenStreetMap'; }
+function mapProvider(){ layer.classList.add('osm'); $('#attrib').textContent='© OpenStreetMap'; }
 function layoutFocus(){
   const w=mapEl.clientWidth||900, h=mapEl.clientHeight||700, port=h>w;
   const L=S.layout||'wgt', panel=L==='apps'?$('#appsPanel'):L==='wgt'?$('#widgets'):null;
@@ -1373,10 +1371,10 @@ function renderSettings(){
   h+='<div class="row"><label>Di notte abbassa la luminosità</label>'+sw('sDim',S.dim)+'</div>';
   h+='<div class="row"><label>Chiave Google Maps<br><small>Con la tua chiave la mappa principale diventa Google Maps, con vista normale e satellite. Lascia vuoto per OpenStreetMap.</small></label><input type="text" id="sGKey" value="'+esc(S.gKey||'')+'" placeholder="Incolla la chiave Google" autocapitalize="off" autocorrect="off" spellcheck="false"></div>';
   h+='<div class="row"><label>Tipo di mappa Google</label>'+sel('sMtype',[['roadmap','Mappa normale'],['hybrid','Satellite']],S.mtype||'roadmap')+'</div>';
-  h+='<div class="row"><label>Chiave mappe CARTO (facoltativa)<br><small>Senza chiave iCar usa OpenStreetMap. Con una chiave gratuita di carto.com/basemaps/apikey la mappa è più nitida e moderna.</small></label><input type="text" id="sKey" value="'+esc(S.cartoKey||'')+'" placeholder="Incolla la chiave" autocapitalize="off" autocorrect="off"></div></div>';
+  h+='</div>';
 
   h+='<div class="gtitle">Ripristino</div><div class="group glass"><div class="row"><label>Riporta tutto come all’inizio</label><button class="btn red" id="reset">Ripristina</button></div></div>';
-  h+='<div class="note" style="text-align:center">iCar 3.5 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
+  h+='<div class="note" style="text-align:center">iCar 3.6 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
   $('#setBody').innerHTML=h;
 
   const on=(id,ev,f)=>{ const e=document.getElementById(id); if(e) e[ev]=f; };
@@ -1408,7 +1406,6 @@ function renderSettings(){
   on('sDim','onchange',e=>{S.dim=e.target.checked;save();applyNight();});
   on('sGKey','onchange',e=>{ S.gKey=e.target.value.trim(); save(); toast(S.gKey?'Chiave salvata: riapro iCar con Google Maps':'Torno a OpenStreetMap'); setTimeout(()=>location.reload(),1200); });
   on('sMtype','onchange',e=>{ S.mtype=e.target.value; save(); if(GM.map) GM.map.setMapTypeId(S.mtype); renderType(); });
-  on('sKey','onchange',e=>{S.cartoKey=e.target.value.trim();save();toast(S.cartoKey?'Mappe CARTO attive':'Mappe OpenStreetMap attive');});
   on('reset','onclick',()=>ask('Ripristinare tutto? Scrivi SI per confermare',[{ph:'SI'}],v=>{ if(v[0].trim().toUpperCase()==='SI'){ S=JSON.parse(JSON.stringify(DEF)); T=tripNew(); save(); applyWall(); renderRecents(); renderSettings(); toast('Ripristinato'); } },'Conferma'));
 }
 function applyWall(){ const w=WALL[S.wall]||WALL.blu; document.documentElement.style.setProperty('--wp1',w[0]); document.documentElement.style.setProperty('--wp2',w[1]); }
