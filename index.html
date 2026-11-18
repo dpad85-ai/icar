@@ -142,10 +142,10 @@ body.night #attrib{color:rgba(255,255,255,.45)}
 #wxIcon{font-size:32px;line-height:1}
 #wxTemp{font-size:22px;font-weight:600;margin-top:2px}
 #wxDesc{font-size:13px;color:var(--dim)}
-#wAudio .row4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+#wAudio .row4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
 #wAudio .tile{width:100%;border-radius:16px}
-#wAudio .app{gap:6px}
-#wAudio .app span{font-size:11.5px;font-weight:500;color:rgba(235,235,245,.78);max-width:100%;text-shadow:none;line-height:1.15}
+#wAudio .app{gap:6px;min-width:0;width:100%}
+#wAudio .app span{display:block;width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-align:center;font-size:11.5px;font-weight:500;color:rgba(235,235,245,.78);max-width:100%;text-shadow:none;line-height:1.15}
 #wTrip .tg{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:10px}
 #wTrip .tg b{display:block;font-size:24px;font-weight:700;letter-spacing:-.5px}
 #wTrip .tg small{font-size:12px;color:var(--dim)}
@@ -450,6 +450,67 @@ body.gm #map:after{z-index:2}
   body.lay-map #searchBox,body.lay-map #navTop,body.lay-map #routeCard,body.lay-map #navBot{width:calc(100% - 128px)}
   #chips{left:0}
 }
+
+/* ===== 4.1: meteo in cima animato, tachimetro sottile ===== */
+#wInfo{position:relative;isolation:isolate;padding:18px 22px;transition:background 1.2s}
+#wInfo>*:not(.wxfx){position:relative;z-index:1}
+#wInfo[data-wx=sun]{background:linear-gradient(135deg,rgba(255,170,60,.42),rgba(40,90,170,.55) 60%,rgba(16,17,22,.85))}
+#wInfo[data-wx=moon]{background:linear-gradient(135deg,rgba(70,60,160,.55),rgba(20,24,60,.75) 60%,rgba(10,10,18,.9))}
+#wInfo[data-wx=cloud],#wInfo[data-wx=fog]{background:linear-gradient(135deg,rgba(150,165,190,.40),rgba(60,70,90,.65) 60%,rgba(16,17,22,.85))}
+#wInfo[data-wx=rain],#wInfo[data-wx=storm]{background:linear-gradient(135deg,rgba(60,110,170,.50),rgba(25,40,70,.75) 60%,rgba(10,12,20,.9))}
+#wInfo[data-wx=snow]{background:linear-gradient(135deg,rgba(200,225,255,.42),rgba(80,110,150,.6) 60%,rgba(16,17,22,.85))}
+.wxfx{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;border-radius:inherit}
+.wxfx i{position:absolute;display:block}
+/* sole / luna: alone che respira */
+#wInfo[data-wx=sun] .wxfx i:nth-child(1),#wInfo[data-wx=moon] .wxfx i:nth-child(1){right:-30px;top:-40px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(255,210,110,.55),rgba(255,170,60,0) 65%);animation:wxGlow 5s ease-in-out infinite}
+#wInfo[data-wx=moon] .wxfx i:nth-child(1){background:radial-gradient(circle,rgba(190,190,255,.40),rgba(120,120,255,0) 65%)}
+#wInfo[data-wx=moon] .wxfx i:nth-child(2),#wInfo[data-wx=moon] .wxfx i:nth-child(3){width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:30px 10px #fff,58px 46px #fff,6px 70px rgba(255,255,255,.7),44px 96px rgba(255,255,255,.6);left:52%;top:10px;opacity:.8;animation:wxTw 3s ease-in-out infinite}
+#wInfo[data-wx=moon] .wxfx i:nth-child(3){left:60%;top:28px;animation-delay:1.5s}
+/* nuvole che scorrono */
+#wInfo[data-wx=cloud] .wxfx i,#wInfo[data-wx=fog] .wxfx i,#wInfo[data-wx=rain] .wxfx i:nth-child(1),#wInfo[data-wx=storm] .wxfx i:nth-child(1),#wInfo[data-wx=snow] .wxfx i:nth-child(1){top:8px;left:-40%;width:160px;height:46px;border-radius:30px;background:rgba(255,255,255,.16);filter:blur(6px);animation:wxDrift 16s linear infinite}
+#wInfo[data-wx=cloud] .wxfx i:nth-child(2),#wInfo[data-wx=fog] .wxfx i:nth-child(2){top:58px;width:200px;animation-duration:22s;animation-delay:-8s;opacity:.7}
+#wInfo[data-wx=cloud] .wxfx i:nth-child(3),#wInfo[data-wx=fog] .wxfx i:nth-child(3){top:30px;width:120px;animation-duration:19s;animation-delay:-14s;opacity:.5}
+/* pioggia e neve che cadono */
+#wInfo[data-wx=rain] .wxfx i:nth-child(2),#wInfo[data-wx=storm] .wxfx i:nth-child(2){inset:-60px 0 0 0;background:repeating-linear-gradient(105deg,rgba(170,210,255,0) 0 14px,rgba(170,210,255,.35) 14px 15px);animation:wxRain .7s linear infinite}
+#wInfo[data-wx=snow] .wxfx i:nth-child(2),#wInfo[data-wx=snow] .wxfx i:nth-child(3){inset:-80px 0 0 0;background-image:radial-gradient(circle,rgba(255,255,255,.85) 1.6px,transparent 2.2px);background-size:34px 34px;animation:wxSnow 4s linear infinite}
+#wInfo[data-wx=snow] .wxfx i:nth-child(3){background-size:52px 52px;background-position:17px 9px;animation-duration:6s;opacity:.7}
+#wInfo[data-wx=storm] .wxfx i:nth-child(3){inset:0;background:rgba(255,255,255,.5);opacity:0;animation:wxFlash 6s infinite}
+/* icona meteo animata */
+#wxIcon{font-size:40px;display:inline-block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.3))}
+#wInfo[data-wx=sun] #wxIcon{animation:wxSpin 18s linear infinite}
+#wInfo:not([data-wx=sun]) #wxIcon{animation:wxBob 3.4s ease-in-out infinite}
+#wxTemp{font-size:28px;font-weight:700}
+#wxDesc{color:rgba(255,255,255,.75)}
+#dateBig{color:rgba(255,255,255,.78);text-transform:capitalize}
+#clockBig .cl{animation:clBlink 2s steps(1) infinite}
+@keyframes wxGlow{50%{transform:scale(1.15);opacity:.75}}
+@keyframes wxTw{50%{opacity:.2}}
+@keyframes wxDrift{to{left:110%}}
+@keyframes wxRain{to{transform:translateY(60px)}}
+@keyframes wxSnow{to{transform:translateY(80px)}}
+@keyframes wxFlash{0%,92%,100%{opacity:0}93%{opacity:.6}95%{opacity:0}96%{opacity:.4}}
+@keyframes wxSpin{to{transform:rotate(360deg)}}
+@keyframes wxBob{50%{transform:translateY(-4px)}}
+@keyframes clBlink{50%{opacity:.25}}
+@media (orientation:portrait){
+  :root{--bot:300px}
+  #widgets{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;height:auto;gap:12px}
+  #widgets #wInfo{display:flex;grid-column:1;grid-row:1;padding:12px 18px}
+  #widgets #wSpeed{grid-column:1;grid-row:2}
+  #widgets #wAudio{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;justify-content:center}
+  #clockBig{font-size:34px} #wxIcon{font-size:30px} #wxTemp{font-size:22px}
+}
+@media (prefers-reduced-motion:reduce){#wInfo *{animation:none!important}}
+/* tachimetro sottile */
+#wSpeed{padding:6px 16px 6px 10px;gap:12px;border-radius:22px}
+#gauge{width:66px;height:66px}
+#gauge circle{stroke-width:8}
+#speed{font-size:27px;letter-spacing:-.5px}
+#gauge small{font-size:10px;margin-top:0}
+#spSide{flex-direction:row;gap:10px;margin-left:auto}
+#limBadge{width:36px;height:36px;border-width:3.5px;font-size:14px}
+#limBadge.off{font-size:11px}
+#spSide small{font-size:12px}
 </style>
 </head>
 <body class="day">
@@ -509,14 +570,14 @@ body.gm #map:after{z-index:2}
       </div>
 
       <div class="ov" id="widgets">
+        <div class="wg glass" id="wInfo" data-wx="sun"><div class="wxfx" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div><div id="clockBig" class="num">--:--</div><div id="dateBig"></div></div>
+          <div id="wxBox"><div id="wxIcon"></div><div id="wxTemp" class="num">--°</div><div id="wxDesc">Meteo</div></div>
+        </div>
         <div class="wg glass" id="wSpeed">
           <div id="gauge"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="9" stroke-linecap="round" stroke-dasharray="245 400" transform="rotate(135 60 60)"/><circle id="gArc" cx="60" cy="60" r="52" fill="none" stroke="#30d158" stroke-width="9" stroke-linecap="round" stroke-dasharray="0 400" transform="rotate(135 60 60)" style="transition:stroke-dasharray .8s,stroke .3s"/></svg>
             <div class="val"><div id="speed" class="num">--</div><small>km/h</small></div></div>
           <div id="spSide"><div id="limBadge" class="off">—</div><small id="limTxt">avviso</small></div>
-        </div>
-        <div class="wg glass" id="wInfo">
-          <div><div id="clockBig" class="num">--:--</div><div id="dateBig"></div></div>
-          <div id="wxBox"><div id="wxIcon"></div><div id="wxTemp" class="num">--°</div><div id="wxDesc">Meteo</div></div>
         </div>
         <div class="wg glass" id="wAudio"><h4 id="wAudioH"></h4><div class="row4" id="mbtns"></div></div>
         <div class="wg glass" id="wTrip"><h4 id="wTripH"></h4>
@@ -1289,7 +1350,7 @@ let sun=null, wxNow=null;
 function weather(lat,lon){
   getJSON('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(3)+'&longitude='+lon.toFixed(3)+'&current=temperature_2m,weather_code,is_day&daily=sunrise,sunset&forecast_days=1&timezone=auto')
    .then(j=>{ const t=Math.round(j.current.temperature_2m), c=j.current.weather_code, w=WX.find(x=>c<=x[0])||WX[0];
-     const ic=(j.current.is_day===0&&c<=2)?'🌙':w[1]; wxNow={t:t,desc:w[2]};
+     const ic=(j.current.is_day===0&&c<=2)?'🌙':w[1]; wxNow={t:t,desc:w[2]}; const kd=(j.current.is_day===0&&c<=2)?'moon':c<=1?'sun':c<=3?'cloud':c<=48?'fog':c<=67||(c>=80&&c<=82)?'rain':c<=86?'snow':'storm'; $('#wInfo').dataset.wx=kd;
      $('#wxIcon').textContent=ic; $('#wxTemp').textContent=t+'°'; $('#wxDesc').textContent=w[2]; $('#sideTemp').textContent=ic+' '+t+'°';
      if(j.daily&&j.daily.sunrise){ sun={rise:new Date(j.daily.sunrise[0]).getTime(),set:new Date(j.daily.sunset[0]).getTime()}; applyNight(); } }).catch(()=>{});
 }
@@ -1524,7 +1585,7 @@ function renderSettings(){
   h+='<div class="row"><label>Salva le impostazioni in un file<br><small>'+(S.lastBackup?'Ultima copia: '+new Date(S.lastBackup).toLocaleDateString('it-IT'):'Nessuna copia salvata')+'</small></label><button class="btn blue" id="bkSave">Salva copia</button></div>';
   h+='<div class="row"><label>Ricarica le impostazioni da un file</label><button class="btn" id="bkLoad">Carica copia</button></div></div>';
   h+='<div class="gtitle">Ripristino</div><div class="group glass"><div class="row"><label>Riporta tutto come all’inizio<br><small>La chiave Google Maps resta salvata</small></label><button class="btn red" id="reset">Ripristina</button></div></div>';
-  h+='<div class="note" style="text-align:center">iCar 4.0 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
+  h+='<div class="note" style="text-align:center">iCar 4.1 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
   $('#setBody').innerHTML=h;
 
   const on=(id,ev,f)=>{ const e=document.getElementById(id); if(e) e[ev]=f; };
@@ -1593,7 +1654,7 @@ document.addEventListener('click',()=>{ requestWake(); if(S.beep&&S.limit) audio
 /* ================= orologio ================= */
 const GIORNI=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
 const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
-function tick(){ const d=new Date(), t=hm(d); $('#sideClock').textContent=t; $('#clockBig').textContent=t; $('#apClock').textContent=t; $('#apDate').textContent=GIORNI[d.getDay()]+' '+d.getDate()+' '+MESI[d.getMonth()];
+function tick(){ const d=new Date(), t=hm(d); $('#sideClock').textContent=t; $('#clockBig').innerHTML=esc(t).replace(':','<span class="cl">:</span>'); $('#apClock').textContent=t; $('#apDate').textContent=GIORNI[d.getDay()]+' '+d.getDate()+' '+MESI[d.getMonth()];
   $('#dateBig').textContent=GIORNI[d.getDay()]+' '+d.getDate()+' '+MESI[d.getMonth()]; applyNight(); }
 
 /* ================= avvio ================= */

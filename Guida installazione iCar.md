@@ -1,6 +1,13 @@
-# iCar – guida all'installazione su iPad (versione 4.0)
+# iCar – guida all'installazione su iPad (versione 4.1)
 
 File (5): index.html, sw.js, icon.png, icon-512.png, manifest.json
+
+## Novità della 4.1: meteo animato in cima, tachimetro sottile
+- Il riquadro con **ora, data e meteo** è il primo in alto, ed è animato: lo sfondo cambia colore con il tempo; il sole gira, di notte compaiono luna e stelle, con nuvole, pioggia e neve si vedono scorrere o cadere, col temporale ogni tanto un lampo. I due punti dell'ora lampeggiano piano.
+- Il **tachimetro** è più piccolo e sottile.
+- Le 4 icone del riquadro **Audio e app** hanno sempre la stessa misura; i nomi lunghi si accorciano con i puntini.
+- Con l'iPad in verticale il meteo ora si vede (in basso a sinistra, sopra il tachimetro).
+- Se nelle impostazioni dell'iPad è attivo "Riduci movimento", le animazioni restano ferme.
 
 ## Novità della 4.0: stile più moderno
 La barra a sinistra ora galleggia sopra la mappa, che si vede a tutto schermo; con l'iPad in verticale diventa una barra in basso. Riquadri in vetro più scuro e arrotondato, numeri in carattere arrotondato, tasti della mappa rotondi, barra di ricerca a pillola. Le funzioni non cambiano. Dopo l'aggiornamento chiudi del tutto iCar e riaprilo: in fondo alle Impostazioni deve comparire «iCar 4.0».
