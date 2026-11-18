@@ -1,19 +1,19 @@
 # Stato del progetto iCar (aggiornato il 18 novembre 2026)
 
-**Versione attuale:** iCar 3.8.1
+**Versione attuale:** iCar 4.0
 **Cartella sul computer:** D:\Daniele\Documents\iCar
 
 ## File in questa cartella
 - `index.html`, `sw.js`, `manifest.json`, `icon.png`, `icon-512.png`: i file dell'app da caricare su GitHub.
 - `Guida installazione iCar.md`: come installare, aggiornare, mettere la chiave Google Maps, usare lo schermo diviso.
-- `versioni\`: una copia ZIP completa per ogni versione (iCar-3.6.zip, iCar-3.7.zip, iCar-3.7.1.zip, iCar-3.8.zip, iCar-3.8.1.zip…).
+- `versioni\`: una copia ZIP completa per ogni versione (iCar-3.6.zip, iCar-3.7.zip, iCar-3.7.1.zip, iCar-3.8.zip, iCar-3.8.1.zip, iCar-3.8.2.zip, iCar-4.0.zip…).
 
 ## Dove altro è salvato
 - Anteprima "iCar" su Claude: https://claude.ai/artifact/TUEnQ4BJR1aVrc35kPAbYg
 - Progetto "iCar" su Claude: guida e questa scheda.
 - GitHub: repository **dpad85-ai/icar**, sito **https://dpad85-ai.github.io/icar** (la copia che usa l'iPad). Claude carica direttamente gli aggiornamenti su GitHub (permesso dato il 18/11/2026).
 
-## Cosa fa iCar 3.8.1
+## Cosa fa iCar 4.0
 - Mappa a tutto schermo: Google Maps (normale e satellite) con chiave personale, altrimenti OpenStreetMap. Mappa scura di notte.
 - Tre schermate: mappa e riquadri / mappa e app a metà schermo / solo mappa.
 - Navigatore interno con voce in italiano, ricalcolo, ora di arrivo; "Apri in Google Maps".
@@ -22,7 +22,8 @@
 - Telefono: il tasto apre subito l'app Telefono dell'iPad (tramite il Comando rapido "Apri Telefono"), senza schermata propria in iCar. Contatti preferiti e contatti importati (.vcf o scelta dai Contatti) servono ai comandi vocali.
 - Catalogo "Aggiungi app" con oltre 50 app + qualsiasi app tramite Comandi rapidi.
 - Chiave Google Maps nascosta con spunta ✓ se valida; copia di sicurezza delle impostazioni in un file (iCar-impostazioni.json).
-- Icone in stile Apple, icona Home scura con tachimetro verde.
+- Icone in stile Apple, icona Home scura con tachimetro verde; nome piccolo sotto i 4 tasti del riquadro "Audio e app" (3.8.2).
+- Stile 4.0: barra laterale che galleggia sopra la mappa (in basso con iPad in verticale), riquadri in vetro scuro più arrotondati, numeri in carattere arrotondato, tasti mappa rotondi, ricerca a pillola, sfondo delle app più colorato.
 
 ## Scelte fatte
 - Google Maps navigatore predefinito per tutto.

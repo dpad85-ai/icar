@@ -1,6 +1,12 @@
-# iCar – guida all'installazione su iPad (versione 3.8.1)
+# iCar – guida all'installazione su iPad (versione 4.0)
 
 File (5): index.html, sw.js, icon.png, icon-512.png, manifest.json
+
+## Novità della 4.0: stile più moderno
+La barra a sinistra ora galleggia sopra la mappa, che si vede a tutto schermo; con l'iPad in verticale diventa una barra in basso. Riquadri in vetro più scuro e arrotondato, numeri in carattere arrotondato, tasti della mappa rotondi, barra di ricerca a pillola. Le funzioni non cambiano. Dopo l'aggiornamento chiudi del tutto iCar e riaprilo: in fondo alle Impostazioni deve comparire «iCar 4.0».
+
+## Novità della 3.8.2: nomi sotto i tasti di «Audio e app»
+Sotto ognuno dei 4 tasti del riquadro compare in piccolo il nome dell'app.
 
 ## Novità della 3.8.1: chiave Google Maps nascosta e sempre salvata
 - In **Impostazioni → Schermo** la chiave Google Maps è **nascosta** (si vedono solo le ultime 4 cifre). "Mostra" la fa vedere per 8 secondi, "Cambia" ne inserisce una nuova, "Rimuovi" la toglie.
