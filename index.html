@@ -443,22 +443,6 @@ body.night.dim #dimLayer{opacity:.28}
     <!-- HOME -->
     <section class="view" id="home"><div id="pages"></div><div id="dots"></div></section>
 
-    <!-- TELEFONO -->
-    <section class="view" id="phone">
-      <div class="topbar"><button class="back" data-go="dash"></button><h2>Telefono</h2>
-        <div class="seg"><button data-ph="favs" class="on">Preferiti</button><button data-ph="book">Contatti</button><button data-ph="recents">Recenti</button><button data-ph="keypad">Tastierino</button></div></div>
-      <div id="phoneBody">
-        <div class="native"><button class="pbtn glass press" id="nPhone"></button></div>
-        <div id="favs"></div>
-        <div id="book" class="phList" style="display:none"></div>
-        <div id="callList" class="phList" style="display:none"></div>
-        <div id="keypad" style="display:none">
-          <div id="kpDisplay"><div id="kpNum" class="num"></div><button class="callBtn press" id="kpCall"></button><button class="delBtn" id="kpDel">Cancella</button></div>
-          <div id="kpGrid"></div>
-        </div>
-      </div>
-    </section>
-
     <!-- IMPOSTAZIONI -->
     <section class="view" id="settings">
       <div class="topbar"><button class="back" data-go="dash"></button><h2>Impostazioni</h2></div>
@@ -552,7 +536,7 @@ const BUILTIN = [
   {id:'gmaps',  name:'Google Maps',   icon:'pin',   color:'green',  act:{url:'comgooglemaps://'}},
   {id:'waze',   name:'Waze',          icon:'compass',color:'cyan',  act:{url:'waze://'}},
   {id:'amaps',  name:'Mappe Apple',   icon:'nav',   color:'blue',   act:{url:'maps://'}},
-  {id:'phone',  name:'Telefono',      icon:'phone', color:'green',  act:{view:'phone'}},
+  {id:'phone',  name:'Telefono',      icon:'phone', color:'green',  act:{phoneApp:true}},
   {id:'sms',    name:'Messaggi',      icon:'msg',   color:'lime',   act:{url:'sms:'}},
   {id:'wa',     name:'WhatsApp',      icon:'chat',  color:'green',  act:{url:'whatsapp://'}},
   {id:'music',  name:'Musica',        icon:'note',  color:'pink',   act:{url:'music://'}},
@@ -654,6 +638,7 @@ function launch(a){
   if(!a) return;
   if(!['set','dash','addapp'].includes(a.id)){ S.recent=[a.id].concat(S.recent.filter(x=>x!==a.id)).slice(0,3); save(); renderRecents(); }
   const act=a.act;
+  if(act.phoneApp) return openNative();
   if(act.view) return show(act.view);
   if(act.catalog) return openCatalog();
   if(act.search) return openURL(NAVS[S.nav].q(act.search));
@@ -676,7 +661,6 @@ function show(v){
   document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id===v));
   $('#toggleView').innerHTML=svg(v==='dash'?'grid':'map');
   if(v==='dash'){ renderDash(); requestAnimationFrame(()=>{ layoutFocus(); mapReset(); }); }
-  if(v==='phone') renderPhone();
   if(v==='settings') renderSettings();
   if(v==='home') renderHome();
   requestWake();
@@ -1278,9 +1262,6 @@ async function handleVoice(raw){
 }
 
 /* ================= telefono ================= */
-let phTab='favs', kp='', bookQ='';
-document.querySelectorAll('[data-ph]').forEach(b=>b.onclick=()=>{ phTab=b.dataset.ph; renderPhone(); });
-$('#nPhone').innerHTML=gly('phone')+'Apri l’app Telefono dell’iPad (tutte le chiamate e i contatti)';
 function openNative(){
   const n=(S.phoneSc||'').trim();
   if(n){ window.location.href='shortcuts://run-shortcut?name='+enc(n); return; }
@@ -1289,77 +1270,17 @@ function openNative(){
 function phoneSetup(){
   choose('Collega l’app Telefono (una volta sola)',[
     ['1. Apri Comandi rapidi e crea il comando','blue',()=>{ window.location.href='shortcuts://create-shortcut'; }],
-    ['2. Fatto: il comando si chiama “Apri Telefono”','green',()=>{ S.phoneSc='Apri Telefono'; save(); toast('Collegato! Tocca di nuovo il tasto quando vuoi'); setTimeout(()=>{ window.location.href='shortcuts://run-shortcut?name='+enc('Apri Telefono'); },600); }]
-  ],'L’iPad non permette a iCar di aprire direttamente l’app Telefono, ma un Comando rapido sì. In Comandi rapidi: tocca “Aggiungi azione”, cerca “Apri app”, scegli l’app Telefono, poi in alto rinomina il comando in “Apri Telefono” e tocca Fine. Torna in iCar e tocca il punto 2.');
+    ['2. Fatto: il comando si chiama “Apri Telefono”','green',()=>{ S.phoneSc='Apri Telefono'; save(); toast('Collegato!'); setTimeout(()=>{ window.location.href='shortcuts://run-shortcut?name='+enc('Apri Telefono'); },600); }]
+  ],'L’iPad non permette a iCar di aprire direttamente l’app Telefono, ma un Comando rapido sì. In Comandi rapidi: tocca “Aggiungi azione”, cerca “Apri app”, scegli l’app Telefono, poi in alto rinomina il comando in “Apri Telefono” e tocca Fine. Torna in iCar e tocca il punto 2. Da quel momento il tasto Telefono apre subito l’app.');
 }
-$('#nPhone').onclick=openNative;
 const TYPE={CELL:'cellulare',MOBILE:'cellulare',HOME:'casa',WORK:'lavoro',MAIN:'principale',IPHONE:'iPhone',OTHER:'altro'};
-function avatar(n){ return '<span class="avatar">'+esc((n||'?').trim().charAt(0).toUpperCase())+'</span>'; }
-function isFav(num){ const k=normNum(num); return S.contacts.some(c=>normNum(c.num)===k); }
-function toggleFav(name,num){ const k=normNum(num), i=S.contacts.findIndex(c=>normNum(c.num)===k);
-  if(i>=0){ S.contacts.splice(i,1); toast(name+' tolto dai preferiti'); } else { S.contacts.push({name:name,num:num}); toast(name+' aggiunto ai preferiti'); }
-  save(); renderPhone(); }
-function pickNumber(c,then){ if(c.nums.length===1) return then(c.nums[0].v);
-  choose(c.n,c.nums.map(x=>[(x.l?cap(x.l)+': ':'')+x.v,'',()=>then(x.v)])); }
-function renderPhone(){
-  document.querySelectorAll('[data-ph]').forEach(b=>b.classList.toggle('on',b.dataset.ph===phTab));
-  $('#favs').style.display=phTab==='favs'?'grid':'none'; $('#keypad').style.display=phTab==='keypad'?'flex':'none';
-  $('#book').style.display=phTab==='book'?'flex':'none'; $('#callList').style.display=phTab==='recents'?'flex':'none';
-  const c=S.contacts;
-  $('#favs').innerHTML=c.map((x,i)=>'<div class="fav glass"><button class="favMain" data-i="'+i+'">'+avatar(x.name)+'<div><b>'+esc(x.name)+'</b><small>'+esc(x.num)+'</small></div></button><button class="favMsg" data-m="'+i+'" aria-label="Messaggio">'+svg('msg')+'</button></div>').join('')
-    +'<div class="fav glass"><button class="favMain" id="addFav"><span class="avatar" style="background:var(--accent)">+</span><div><b>Aggiungi</b><small>Nuovo preferito</small></div></button></div>';
-  $('#favs').querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>call(c[+b.dataset.i].num,c[+b.dataset.i].name));
-  $('#favs').querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>sms(c[+b.dataset.m].num));
-  $('#addFav').onclick=addContact; $('#kpNum').textContent=kp;
-  if(phTab==='book') renderBook();
-  if(phTab==='recents') renderRecentCalls();
-}
-function renderBook(){
-  const box=$('#book'), B=(S.book||[]);
-  if(!B.length){
-    box.innerHTML='<div class="phEmpty"><b>Importa i contatti dell’iPad</b>iCar non può leggere da solo la rubrica: scegli tu quali contatti portare in iCar. Restano salvati solo su questo iPad.'+
-      '<button class="pbtn blue press" id="impPick">Scegli dai Contatti</button><button class="pbtn press" id="impFile">Importa file dei contatti (.vcf)</button>'+
-      '<button class="pbtn press" id="impHelp" style="background:none;color:var(--accent)">Come si fa?</button></div>';
-    bindImport(); return;
-  }
-  const q=bookQ.toLowerCase().trim();
-  const list=B.filter(x=>!q||x.n.toLowerCase().includes(q)||x.nums.some(n=>n.v.replace(/\s/g,'').includes(q.replace(/\s/g,''))));
-  let h='<div class="phTools"><input id="bookQ" type="text" placeholder="Cerca tra '+B.length+' contatti" value="'+esc(bookQ)+'"><button class="btn press" id="impMore">Importa</button></div><div class="phList" id="bookList">';
-  let L='';
-  list.slice(0,400).forEach(x=>{ const i=B.indexOf(x), l=(x.n.charAt(0)||'#').toUpperCase(); if(l!==L){ L=l; h+='<div class="letter">'+esc(l)+'</div>'; }
-    const n0=x.nums[0]; const fav=isFav(n0.v);
-    h+='<div class="ct glass"><button class="favMain" data-c="'+i+'">'+avatar(x.n)+'<div><b>'+esc(x.n)+'</b><small>'+esc(n0.v)+(x.nums.length>1?' · +'+(x.nums.length-1)+' numeri':(n0.l?' · '+esc(n0.l):''))+'</small></div></button>'+
-       '<button class="ctBtn star'+(fav?' on':'')+'" data-f="'+i+'" aria-label="Preferito">'+gly('star')+'</button><button class="ctBtn" data-s="'+i+'" aria-label="Messaggio" style="color:var(--green)">'+svg('msg')+'</button></div>'; });
-  if(!list.length) h+='<div class="phEmpty">Nessun contatto trovato</div>';
-  h+='</div>';
-  box.innerHTML=h;
-  const qi=$('#bookQ'); qi.oninput=()=>{ bookQ=qi.value; const pos=qi.selectionStart; renderBook(); const n=$('#bookQ'); n.focus(); try{ n.setSelectionRange(pos,pos);}catch(e){} };
-  $('#impMore').onclick=()=>choose('Importa contatti',[['Scegli dai Contatti','blue',pickContacts],['Importa file .vcf','',()=>$('#vcfIn').click()],['Cancella i contatti importati','red',()=>{ S.book=[]; save(); renderPhone(); }]]);
-  box.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{ const x=B[+b.dataset.c]; pickNumber(x,v=>call(v,x.n)); });
-  box.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{ const x=B[+b.dataset.s]; pickNumber(x,v=>sms(v)); });
-  box.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ const x=B[+b.dataset.f]; pickNumber(x,v=>toggleFav(x.n,v)); });
-}
-function renderRecentCalls(){
-  const box=$('#callList'), C=S.calls||[];
-  let h='<div class="note">Qui vedi le chiamate fatte da iCar. Per tutte le chiamate (anche ricevute e perse) tocca il tasto in alto: si apre l’app Telefono dell’iPad.</div>';
-  if(!C.length) h+='<div class="phEmpty">Nessuna chiamata fatta da iCar</div>';
-  const today=new Date().toDateString(), yest=new Date(Date.now()-864e5).toDateString();
-  C.forEach((x,i)=>{ const d=new Date(x.t), day=d.toDateString()===today?'oggi':d.toDateString()===yest?'ieri':d.getDate()+'/'+(d.getMonth()+1);
-    h+='<div class="ct glass rc"><button class="favMain" data-r="'+i+'">'+avatar(x.n||'#')+'<div><b>'+esc(x.n||x.num)+'</b><small>'+(x.n?esc(x.num)+' · ':'')+day+' alle '+hm(d)+'</small></div></button><button class="ctBtn" data-rs="'+i+'" aria-label="Messaggio" style="color:var(--green)">'+svg('msg')+'</button></div>'; });
-  if(C.length) h+='<button class="btn red press" id="clrCalls" style="align-self:center;margin-top:8px">Cancella elenco</button>';
-  box.innerHTML=h;
-  box.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{ const x=C[+b.dataset.r]; call(x.num,x.n); });
-  box.querySelectorAll('[data-rs]').forEach(b=>b.onclick=()=>sms(C[+b.dataset.rs].num));
-  const cl=$('#clrCalls'); if(cl) cl.onclick=()=>{ S.calls=[]; save(); renderPhone(); };
-}
 /* importazione contatti */
 const vcfIn=document.createElement('input'); vcfIn.type='file'; vcfIn.id='vcfIn'; vcfIn.accept='.vcf,text/vcard,text/x-vcard'; vcfIn.style.display='none'; document.body.appendChild(vcfIn);
 vcfIn.onchange=()=>{ const f=vcfIn.files&&vcfIn.files[0]; if(!f) return; const rd=new FileReader();
   rd.onload=()=>{ const list=parseVcf(String(rd.result||'')); vcfIn.value=''; addToBook(list); };
   rd.readAsText(f); };
-function bindImport(){ const a=$('#impPick'), b=$('#impFile'), c=$('#impHelp'); if(a) a.onclick=pickContacts; if(b) b.onclick=()=>vcfIn.click(); if(c) c.onclick=importHelp; }
 function importHelp(){ choose('Come portare i contatti in iCar',[['Ho capito','blue',()=>{}]],
-  'Modo 1 – Scegli dai Contatti: si apre la rubrica dell’iPad e tocchi i contatti da portare. Se iCar dice che non è disponibile, attivalo una volta: Impostazioni dell’iPad → App → Safari → Avanzate → Feature Flags → “Contact Picker API”. Modo 2 – File .vcf: nell’app Contatti dell’iPad tieni premuto un elenco (es. “Tutti i contatti”) → Esporta → Salva su File; poi in iCar tocca “Importa file dei contatti” e scegli quel file.'); }
+  'Modo 1 – Scegli dai Contatti: si apre la rubrica dell’iPad e tocchi i contatti da portare. Se iCar dice che non è disponibile, attivalo una volta: Impostazioni dell’iPad → App → Safari → Avanzate → Feature Flags → “Contact Picker API”. Modo 2 – File .vcf: nell’app Contatti dell’iPad tieni premuto un elenco (es. “Tutti i contatti”) → Esporta → Salva su File; poi in iCar → Impostazioni → Telefono tocca “Importa” e scegli quel file. I contatti servono ai comandi vocali “chiama…” e “scrivi a…”.'); }
 async function pickContacts(){
   if(!('contacts' in navigator) || !navigator.contacts.select){ return importHelp(); }
   try{ const res=await navigator.contacts.select(['name','tel'],{multiple:true});
@@ -1390,17 +1311,10 @@ function addToBook(list){
     if(ex){ x.nums.forEach(nn=>{ if(!ex.nums.some(o=>normNum(o.v)===normNum(nn.v))) ex.nums.push(nn); }); }
     else { B.push(x); added++; } });
   B.sort((a,b)=>a.n.localeCompare(b.n,'it',{sensitivity:'base'}));
-  S.book=B; save(); phTab='book'; renderPhone(); toast(added+' contatti importati');
+  S.book=B; save(); if(current==='settings') renderSettings(); toast(added+' contatti importati');
 }
 function addContact(){ ask('Nuovo contatto preferito',[{ph:'Nome'},{ph:'Numero di telefono',type:'tel'}],v=>{
-  if(v[0].trim()&&v[1].trim()){ S.contacts.push({name:v[0].trim(),num:v[1].trim()}); save(); if(current==='phone') renderPhone(); else renderSettings(); } }); }
-$('#kpGrid').innerHTML=[['1',''],['2','ABC'],['3','DEF'],['4','GHI'],['5','JKL'],['6','MNO'],['7','PQRS'],['8','TUV'],['9','WXYZ'],['*',''],['0','+'],['#','']]
-  .map(k=>'<button class="key" data-k="'+k[0]+'">'+k[0]+'<small>'+k[1]+'</small></button>').join('');
-$('#kpGrid').querySelectorAll('.key').forEach(b=>{ let t;
-  b.onpointerdown=()=>{ t=setTimeout(()=>{ if(b.dataset.k==='0'){ kp+='+'; $('#kpNum').textContent=kp; t=null; } },600); };
-  b.onclick=()=>{ if(t===null) return; clearTimeout(t); kp+=b.dataset.k; $('#kpNum').textContent=kp; }; });
-$('#kpCall').innerHTML=svg('phone'); $('#kpCall').onclick=()=>call(kp);
-$('#kpDel').onclick=()=>{ kp=kp.slice(0,-1); $('#kpNum').textContent=kp; };
+  if(v[0].trim()&&v[1].trim()){ S.contacts.push({name:v[0].trim(),num:v[1].trim()}); save(); renderSettings(); } }); }
 
 /* ================= catalogo app ================= */
 function openCatalog(){ $('#cat').classList.add('on'); $('#catSearch').value=''; renderCatalog(); }
@@ -1483,7 +1397,7 @@ function renderSettings(){
   h+='<div class="row"><label>Chiama con</label>'+sel('sCall',[['tel','Telefono (tramite iPhone)'],['facetime','FaceTime audio']],S.call)+'</div>';
   S.contacts.forEach((c,i)=>{ h+='<div class="row"><span class="mini" style="background:'+G.gray+'">'+gly('user')+'</span><label>'+esc(c.name)+'<br><small>'+esc(c.num)+'</small></label><button class="btn red" data-delc="'+i+'">Elimina</button></div>'; });
   h+='<div class="row"><label>Contatti preferiti</label><button class="btn" id="addC">+ Aggiungi contatto</button></div>';
-  h+='<div class="row"><label>Contatti importati<br><small>'+(S.book||[]).length+' contatti salvati su questo iPad</small></label><button class="btn" id="goBook">Gestisci</button></div>';
+  h+='<div class="row"><label>Contatti per i comandi vocali<br><small>'+(S.book||[]).length+' contatti importati su questo iPad</small></label><button class="btn" id="goBook">Importa</button></div>';
   h+='<div class="row"><label>Comando per aprire l’app Telefono<br><small>Nome del Comando rapido con “Apri app → Telefono” (di solito “Apri Telefono”)</small></label><input type="text" id="sPhSc" value="'+esc(S.phoneSc||'')+'" placeholder="es. Apri Telefono"></div></div>';
 
   h+='<div class="gtitle">App</div><div class="note">Accendi o spegni le app, cambia l’ordine con le frecce. Con “Aggiungi app” scegli tra decine di app o colleghi qualsiasi app tramite Comandi rapidi.</div><div class="group glass">';
@@ -1508,7 +1422,7 @@ function renderSettings(){
   h+='</div>';
 
   h+='<div class="gtitle">Ripristino</div><div class="group glass"><div class="row"><label>Riporta tutto come all’inizio</label><button class="btn red" id="reset">Ripristina</button></div></div>';
-  h+='<div class="note" style="text-align:center">iCar 3.7.1 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
+  h+='<div class="note" style="text-align:center">iCar 3.8 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
   $('#setBody').innerHTML=h;
 
   const on=(id,ev,f)=>{ const e=document.getElementById(id); if(e) e[ev]=f; };
@@ -1524,7 +1438,7 @@ function renderSettings(){
   on('clrTrips','onclick',()=>{S.trips=[];save();renderSettings();});
   on('sCall','onchange',e=>{S.call=e.target.value;save();});
   on('addC','onclick',addContact);
-  on('goBook','onclick',()=>{ phTab='book'; show('phone'); });
+  on('goBook','onclick',()=>choose('Contatti per i comandi vocali',[['Scegli dai Contatti','blue',pickContacts],['Importa file .vcf','',()=>vcfIn.click()],['Come si fa?','',importHelp]].concat((S.book||[]).length?[['Cancella i contatti importati','red',()=>{ S.book=[]; save(); renderSettings(); }]]:[]),'Servono per dire “chiama Marco” o “scrivi a Giulia”. Le chiamate vere e la rubrica sono nell’app Telefono dell’iPad.'));
   on('sPhSc','onchange',e=>{S.phoneSc=e.target.value.trim();save();});
   on('openCat','onclick',openCatalog);
   [0,1,2,3].forEach(i=>on('sAud'+i,'onchange',e=>{S.audio[i]=e.target.value;save();}));
