@@ -144,6 +144,8 @@ body.night #attrib{color:rgba(255,255,255,.45)}
 #wxDesc{font-size:13px;color:var(--dim)}
 #wAudio .row4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
 #wAudio .tile{width:100%;border-radius:16px}
+#wAudio .app{gap:6px}
+#wAudio .app span{font-size:11.5px;font-weight:500;color:rgba(235,235,245,.78);max-width:100%;text-shadow:none;line-height:1.15}
 #wTrip .tg{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:10px}
 #wTrip .tg b{display:block;font-size:24px;font-weight:700;letter-spacing:-.5px}
 #wTrip .tg small{font-size:12px;color:var(--dim)}
@@ -1179,7 +1181,7 @@ function renderDash(){
   $('#parkChip').onclick=parking;
   $('#wAudioH').innerHTML=svg('note')+'Audio e app';
   const m=S.audio.map(appById).filter(Boolean).slice(0,4);
-  $('#mbtns').innerHTML=m.map(a=>'<button class="app" data-id="'+a.id+'" aria-label="'+esc(a.name)+'">'+tileHTML(a)+'</button>').join('');
+  $('#mbtns').innerHTML=m.map(a=>'<button class="app" data-id="'+a.id+'" aria-label="'+esc(a.name)+'">'+tileHTML(a)+'<span>'+esc(a.name)+'</span></button>').join('');
   $('#mbtns').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>launch(appById(b.dataset.id)));
   $('#wTripH').innerHTML=svg('gauge')+'Computer di bordo<button id="tripReset">Nuovo viaggio</button>';
   $('#tripReset').onclick=()=>tripEnd();
@@ -1438,7 +1440,7 @@ function renderSettings(){
   h+='<div class="row"><label>Salva le impostazioni in un file<br><small>'+(S.lastBackup?'Ultima copia: '+new Date(S.lastBackup).toLocaleDateString('it-IT'):'Nessuna copia salvata')+'</small></label><button class="btn blue" id="bkSave">Salva copia</button></div>';
   h+='<div class="row"><label>Ricarica le impostazioni da un file</label><button class="btn" id="bkLoad">Carica copia</button></div></div>';
   h+='<div class="gtitle">Ripristino</div><div class="group glass"><div class="row"><label>Riporta tutto come all’inizio<br><small>La chiave Google Maps resta salvata</small></label><button class="btn red" id="reset">Ripristina</button></div></div>';
-  h+='<div class="note" style="text-align:center">iCar 3.8.1 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
+  h+='<div class="note" style="text-align:center">iCar 3.8.2 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
   $('#setBody').innerHTML=h;
 
   const on=(id,ev,f)=>{ const e=document.getElementById(id); if(e) e[ev]=f; };
