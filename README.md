@@ -3,7 +3,7 @@
 Schermata in stile CarPlay per iPad, da usare in auto collegata all'iPhone.
 
 - **Apri iCar:** https://dpad85-ai.github.io/icar
-- **Versione:** 4.1
+- **Versione:** 4.2
 - **Guida:** [Guida installazione iCar.md](Guida%20installazione%20iCar.md)
 - **Stato del progetto:** [Stato del progetto iCar.md](Stato%20del%20progetto%20iCar.md)
 

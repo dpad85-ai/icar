@@ -493,7 +493,7 @@ body.gm #map:after{z-index:2}
 @keyframes wxBob{50%{transform:translateY(-4px)}}
 @keyframes clBlink{50%{opacity:.25}}
 @media (orientation:portrait){
-  :root{--bot:300px}
+  :root{--bot:332px}
   #widgets{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;height:auto;gap:12px}
   #widgets #wInfo{display:flex;grid-column:1;grid-row:1;padding:12px 18px}
   #widgets #wSpeed{grid-column:1;grid-row:2}
@@ -511,6 +511,26 @@ body.gm #map:after{z-index:2}
 #limBadge{width:36px;height:36px;border-width:3.5px;font-size:14px}
 #limBadge.off{font-size:11px}
 #spSide small{font-size:12px}
+
+/* ===== 4.2: la mia auto nel riquadro del tachimetro ===== */
+#gauge{overflow:visible}
+#limBadge{position:absolute;right:-6px;top:-4px;z-index:2;width:30px!important;height:30px!important;border-width:3px!important;font-size:12px!important;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+#limBadge.off{display:none}
+#carBox{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:0;color:inherit;padding:2px 0;cursor:pointer}
+#carPic{width:min(124px,100%);aspect-ratio:16/9;display:grid;place-items:center}
+#carPic svg{width:100%;height:100%;filter:drop-shadow(0 4px 8px rgba(0,0,0,.35))}
+#carPic.photo{border-radius:16px;overflow:hidden;box-shadow:0 6px 16px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.14)}
+#carPic img{width:100%;height:100%;object-fit:cover;display:block}
+#carName{font-size:13px;font-weight:600;color:rgba(235,235,245,.85);letter-spacing:.2px;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.carmini{background:linear-gradient(180deg,#3a3d46,#1d1f25)!important;overflow:hidden;display:grid;place-items:center}
+.carmini svg{width:90%;height:auto}.carmini img{width:100%;height:100%;object-fit:cover}
+
+#carPic.cut img{object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
+#wxPlace{display:flex;align-items:center;gap:4px;margin-top:5px;font-size:14px;font-weight:600;color:#fff;max-width:100%}
+#wxPlace[hidden]{display:none}
+#wxPlace svg{width:13px;height:13px;flex:none;opacity:.85}
+#wxPlace span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.wiL{min-width:0}
 </style>
 </head>
 <body class="day">
@@ -571,13 +591,13 @@ body.gm #map:after{z-index:2}
 
       <div class="ov" id="widgets">
         <div class="wg glass" id="wInfo" data-wx="sun"><div class="wxfx" aria-hidden="true"><i></i><i></i><i></i></div>
-          <div><div id="clockBig" class="num">--:--</div><div id="dateBig"></div></div>
+          <div class="wiL"><div id="clockBig" class="num">--:--</div><div id="dateBig"></div><div id="wxPlace" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.6A2.6 2.6 0 1 1 12 6.4a2.6 2.6 0 0 1 0 5.2z"/></svg><span></span></div></div>
           <div id="wxBox"><div id="wxIcon"></div><div id="wxTemp" class="num">--°</div><div id="wxDesc">Meteo</div></div>
         </div>
         <div class="wg glass" id="wSpeed">
           <div id="gauge"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="9" stroke-linecap="round" stroke-dasharray="245 400" transform="rotate(135 60 60)"/><circle id="gArc" cx="60" cy="60" r="52" fill="none" stroke="#30d158" stroke-width="9" stroke-linecap="round" stroke-dasharray="0 400" transform="rotate(135 60 60)" style="transition:stroke-dasharray .8s,stroke .3s"/></svg>
-            <div class="val"><div id="speed" class="num">--</div><small>km/h</small></div></div>
-          <div id="spSide"><div id="limBadge" class="off">—</div><small id="limTxt">avviso</small></div>
+            <div class="val"><div id="speed" class="num">--</div><small>km/h</small></div><div id="limBadge" class="off">—</div></div>
+          <button id="carBox" class="press" aria-label="La mia auto"><div id="carPic"></div><span id="carName"></span></button>
         </div>
         <div class="wg glass" id="wAudio"><h4 id="wAudioH"></h4><div class="row4" id="mbtns"></div></div>
         <div class="wg glass" id="wTrip"><h4 id="wTripH"></h4>
@@ -738,7 +758,7 @@ function enc(s){return encodeURIComponent(String(s).trim())}
 const KEY='icar.v1';
 const DEF = {v:3, layout:'wgt', book:[], calls:[], phoneSc:'', gKey:'', mtype:'roadmap', nav:'google', h24:true, wake:true, wall:'blu', call:'tel', start:'dash',
   home:'', work:'', homeLL:null, workLL:null, places:[], contacts:[], hidden:[], custom:[], order:[], recent:['gmaps','music','phone'],
-  night:'auto', dim:true, limit:0, beep:true, parked:null, voice:true, trip:null, trips:[], lastPos:null, audio:['music','spotify','pod','wa']};
+  night:'auto', dim:true, limit:0, beep:true, parked:null, voice:true, trip:null, trips:[], lastPos:null, audio:['music','spotify','pod','wa'], carName:'Golf7', carPhoto:''};
 let S;
 try{ S = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY)||'{}')); }catch(e){ S = Object.assign({}, DEF); }
 S.recent=(S.recent||[]).filter(x=>x!=='carplay'); S.order=(S.order||[]).filter(x=>x!=='carplay');
@@ -1084,6 +1104,7 @@ function onPos(p){
   if(!S.lastPos || kmBetween(S.lastPos,pos)>0.2){ S.lastPos={lat:+pos.lat.toFixed(5),lon:+pos.lon.toFixed(5)}; save(); }
   updateSpeed(); tripTick();
   if(now-lastWx>15*60*1000){ lastWx=now; weather(pos.lat,pos.lon); }
+  if(!placeAt || now-placeAt.t>3*60*1000 && kmBetween(placeAt,pos)>1.5){ placeAt={lat:pos.lat,lon:pos.lon,t:now}; placeName(pos.lat,pos.lon); }
   NAV.update();
   if(current==='dash'){
     if(M.follow){ M.lat=pos.lat; M.lon=pos.lon; const z=M.zManual?M.z:autoZoom();
@@ -1100,7 +1121,28 @@ function updateSpeed(){
   arc.setAttribute('stroke',over?'#ff453a':(S.limit&&k>S.limit*0.9?'#ffd60a':'#30d158'));
   if(over && S.beep && Date.now()-lastBeep>8000){ lastBeep=Date.now(); beep(); }
 }
-function renderLimit(){ const b=$('#limBadge'); b.classList.toggle('off',!S.limit); b.textContent=S.limit||'—'; $('#limTxt').textContent=S.limit?'limite':'avviso spento'; }
+function renderLimit(){ const b=$('#limBadge'); b.classList.toggle('off',!S.limit); b.textContent=S.limit||'—'; }
+/* la mia auto (foto e nome nel riquadro del tachimetro) */
+const CAR_SVG='<svg viewBox="0 0 220 96" aria-hidden="true"><defs><linearGradient id="cgB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f6fa"/><stop offset="1" stop-color="#aab3c2"/></linearGradient><linearGradient id="cgW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fc4ff"/><stop offset="1" stop-color="#2c4a78"/></linearGradient></defs><ellipse cx="110" cy="86" rx="98" ry="6" fill="rgba(0,0,0,.35)"/><path d="M14 66c0-9 4-16 14-18l28-6 26-20c5-4 11-6 18-6h48c8 0 14 3 18 9l16 22 18 4c9 2 14 9 14 18v6c0 4-3 7-7 7H21c-4 0-7-3-7-7z" fill="url(#cgB)"/><path d="M64 42l22-17c4-3 8-4 13-4h22v21z" fill="url(#cgW)"/><path d="M127 21h21c6 0 10 2 13 6l12 15h-46z" fill="url(#cgW)"/><path d="M18 58h196" stroke="rgba(0,0,0,.18)" stroke-width="2"/><rect x="196" y="50" width="14" height="7" rx="3" fill="#ff5a4e"/><rect x="16" y="52" width="14" height="6" rx="3" fill="#fff6c8"/><g fill="#1c1c1e"><circle cx="58" cy="76" r="15"/><circle cx="166" cy="76" r="15"/></g><g fill="#c7ccd6"><circle cx="58" cy="76" r="7"/><circle cx="166" cy="76" r="7"/></g></svg>';
+function renderCar(){
+  const p=$('#carPic'); if(!p) return;
+  const cut=/^data:image\/png/.test(S.carPhoto||''); p.classList.toggle('photo',!!S.carPhoto&&!cut); p.classList.toggle('cut',cut);
+  p.innerHTML=S.carPhoto?'<img alt="" src="'+S.carPhoto+'">':CAR_SVG;
+  $('#carName').textContent=S.carName||'La mia auto';
+}
+const carIn=document.createElement('input'); carIn.type='file'; carIn.accept='image/*'; carIn.style.display='none'; document.body.appendChild(carIn);
+carIn.onchange=()=>{ const f=carIn.files&&carIn.files[0]; carIn.value=''; if(!f) return;
+  const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{
+    const png=/png|webp/.test(f.type), c=document.createElement('canvas'), g=c.getContext('2d'); let url;
+    if(png){ const r=Math.min(1,520/im.width,320/im.height); c.width=Math.round(im.width*r); c.height=Math.round(im.height*r); g.drawImage(im,0,0,c.width,c.height); url=c.toDataURL('image/png'); }
+    else { const W=480,H=270; c.width=W; c.height=H; const r=Math.max(W/im.width,H/im.height), w=im.width*r, h=im.height*r; g.drawImage(im,(W-w)/2,(H-h)/2,w,h); url=c.toDataURL('image/jpeg',.8); }
+    const old=S.carPhoto; S.carPhoto=url;
+    try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){ S.carPhoto=old; return toast('Foto troppo grande, provane un’altra'); }
+    renderCar(); if($('#settings').classList.contains('on')) renderSettings(); toast('Foto dell’auto salvata'); };
+    im.onerror=()=>toast('Non riesco ad aprire questa foto'); im.src=rd.result; }; rd.readAsDataURL(f); };
+function carMenu(){ choose(S.carName||'La mia auto',[['Scegli la foto','blue',()=>carIn.click()],['Cambia il nome','',carRename]].concat(S.carPhoto?[['Togli la foto','red',()=>{S.carPhoto='';save();renderCar();}]]:[]),'Scegli una foto dell’auto. Se scegli un’immagine già ritagliata (file .png senza sfondo) si vede solo la macchina. Resta salvata solo su questo iPad.'); }
+function carRename(){ ask('Nome dell’auto',[{ph:'es. Golf7',val:S.carName||''}],v=>{ S.carName=v[0].trim().slice(0,20); save(); renderCar(); if($('#settings').classList.contains('on')) renderSettings(); }); }
+$('#carBox').onclick=e=>{ e.stopPropagation(); carMenu(); };
 $('#miniSpeed').onclick=()=>$('#wSpeed').onclick();
 $('#wSpeed').onclick=()=>{ const v=[0,30,50,70,90,110,130]; S.limit=v[(v.indexOf(S.limit)+1)%v.length]; save(); renderLimit(); updateSpeed(); toast(S.limit?'Avviso oltre '+S.limit+' km/h':'Avviso velocità spento'); };
 
@@ -1330,7 +1372,7 @@ function renderDash(){
   $('#mbtns').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>launch(appById(b.dataset.id)));
   $('#wTripH').innerHTML=svg('gauge')+'Computer di bordo<button id="tripReset">Nuovo viaggio</button>';
   $('#tripReset').onclick=()=>tripEnd();
-  renderLimit(); renderTrip(); renderMute(); startGeo();
+  renderLimit(); renderCar(); renderPlace(); renderTrip(); renderMute(); startGeo();
 }
 function parking(){
   const pk=S.parked;
@@ -1347,6 +1389,14 @@ function parking(){
 /* ================= meteo e notte ================= */
 const WX=[[0,'☀️','Sereno'],[2,'🌤️','Poco nuvoloso'],[3,'☁️','Nuvoloso'],[48,'🌫️','Nebbia'],[57,'🌦️','Pioviggine'],[67,'🌧️','Pioggia'],[77,'❄️','Neve'],[82,'🌧️','Rovesci'],[86,'🌨️','Neve'],[99,'⛈️','Temporale']];
 let sun=null, wxNow=null;
+let placeAt=null;
+function placeName(lat,lon){
+  getJSON('https://photon.komoot.io/reverse?lat='+lat.toFixed(5)+'&lon='+lon.toFixed(5)+'&limit=1',9000).then(j=>{
+    const f=j&&j.features&&j.features[0]; if(!f) return; const p=f.properties||{};
+    const n=p.city||p.town||p.village||p.locality||(p.type==='city'||p.osm_value==='town'||p.osm_value==='village'?p.name:'')||p.district||p.county||'';
+    if(!n) return; S.lastPlace=n; save(); renderPlace(); }).catch(()=>{});
+}
+function renderPlace(){ const e=$('#wxPlace'); if(!e) return; const n=S.lastPlace||''; e.hidden=!n; e.querySelector('span').textContent=n; }
 function weather(lat,lon){
   getJSON('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(3)+'&longitude='+lon.toFixed(3)+'&current=temperature_2m,weather_code,is_day&daily=sunrise,sunset&forecast_days=1&timezone=auto')
    .then(j=>{ const t=Math.round(j.current.temperature_2m), c=j.current.weather_code, w=WX.find(x=>c<=x[0])||WX[0];
@@ -1544,7 +1594,8 @@ function renderSettings(){
   h+='<div class="row"><label>All’apertura mostra</label>'+sel('sStart',[['dash','Mappa'],['home','App']],S.start)+'</div>';
   h+='<div class="row"><label>Schermata della mappa<br><small>Si cambia anche col tasto sotto lo zoom</small></label>'+sel('sLay',LAYS.map(x=>[x[0],x[2]]),S.layout||'wgt')+'</div>';
   h+='<div class="row"><label>Avviso di velocità<br><small>Puoi cambiarlo anche toccando il tachimetro</small></label>'+sel('sLimit',[0,30,50,70,90,110,130].map(v=>[v,v?'Oltre '+v+' km/h':'Spento']),S.limit)+'</div>';
-  h+='<div class="row"><label>Suono di avviso</label>'+sw('sBeep',S.beep)+'</div></div>';
+  h+='<div class="row"><label>Suono di avviso</label>'+sw('sBeep',S.beep)+'</div>';
+  h+='<div class="row"><span class="mini carmini">'+(S.carPhoto?'<img alt="" src="'+S.carPhoto+'">':CAR_SVG)+'</span><label>La mia auto<br><small>Foto e nome nel riquadro del tachimetro</small></label><input type="text" id="sCar" value="'+esc(S.carName||'')+'" placeholder="es. Golf7" maxlength="20"><button class="btn blue" id="carPick">'+(S.carPhoto?'Cambia foto':'Scegli foto')+'</button>'+(S.carPhoto?'<button class="btn red" id="carDel">Togli</button>':'')+'</div></div>';
 
   h+='<div class="gtitle">Computer di bordo · ultimi viaggi</div><div class="group glass">';
   if(!S.trips.length) h+='<div class="row"><label style="color:var(--dim)">Nessun viaggio salvato. Un viaggio si salva da solo dopo 10 minuti da fermo, o con “Nuovo viaggio”.</label></div>';
@@ -1585,7 +1636,7 @@ function renderSettings(){
   h+='<div class="row"><label>Salva le impostazioni in un file<br><small>'+(S.lastBackup?'Ultima copia: '+new Date(S.lastBackup).toLocaleDateString('it-IT'):'Nessuna copia salvata')+'</small></label><button class="btn blue" id="bkSave">Salva copia</button></div>';
   h+='<div class="row"><label>Ricarica le impostazioni da un file</label><button class="btn" id="bkLoad">Carica copia</button></div></div>';
   h+='<div class="gtitle">Ripristino</div><div class="group glass"><div class="row"><label>Riporta tutto come all’inizio<br><small>La chiave Google Maps resta salvata</small></label><button class="btn red" id="reset">Ripristina</button></div></div>';
-  h+='<div class="note" style="text-align:center">iCar 4.1 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
+  h+='<div class="note" style="text-align:center">iCar 4.2 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
   $('#setBody').innerHTML=h;
 
   const on=(id,ev,f)=>{ const e=document.getElementById(id); if(e) e[ev]=f; };
@@ -1598,6 +1649,9 @@ function renderSettings(){
   on('sLay','onchange',e=>{S.layout=e.target.value;save();applyLayout();});
   on('sLimit','onchange',e=>{S.limit=+e.target.value;save();renderLimit();});
   on('sBeep','onchange',e=>{S.beep=e.target.checked;save(); if(S.beep) beep();});
+  on('sCar','onchange',e=>{S.carName=e.target.value.trim().slice(0,20);save();renderCar();});
+  on('carPick','onclick',()=>carIn.click());
+  on('carDel','onclick',()=>{S.carPhoto='';save();renderCar();renderSettings();});
   on('clrTrips','onclick',()=>{S.trips=[];save();renderSettings();});
   on('sCall','onchange',e=>{S.call=e.target.value;save();});
   on('addC','onclick',addContact);
@@ -1625,7 +1679,7 @@ function renderSettings(){
   on('sMtype','onchange',e=>{ S.mtype=e.target.value; save(); if(GM.map) GM.map.setMapTypeId(S.mtype); renderType(); });
   on('bkSave','onclick',backupSave);
   on('bkLoad','onclick',()=>bkIn.click());
-  on('reset','onclick',()=>ask('Ripristinare tutto? Scrivi SI per confermare',[{ph:'SI'}],v=>{ if(v[0].trim().toUpperCase()==='SI'){ const keep={gKey:S.gKey,gKeyOk:S.gKeyOk,phoneSc:S.phoneSc}; S=Object.assign(JSON.parse(JSON.stringify(DEF)),keep); T=tripNew(); save(); applyWall(); renderRecents(); renderSettings(); toast('Ripristinato'); } },'Conferma'));
+  on('reset','onclick',()=>ask('Ripristinare tutto? Scrivi SI per confermare',[{ph:'SI'}],v=>{ if(v[0].trim().toUpperCase()==='SI'){ const keep={gKey:S.gKey,gKeyOk:S.gKeyOk,phoneSc:S.phoneSc,carName:S.carName,carPhoto:S.carPhoto}; S=Object.assign(JSON.parse(JSON.stringify(DEF)),keep); T=tripNew(); save(); applyWall(); renderRecents(); renderSettings(); toast('Ripristinato'); } },'Conferma'));
 }
 /* copia di sicurezza delle impostazioni */
 function backupSave(){

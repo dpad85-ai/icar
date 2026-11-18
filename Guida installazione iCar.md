@@ -1,6 +1,13 @@
-# iCar – guida all'installazione su iPad (versione 4.1)
+# iCar – guida all'installazione su iPad (versione 4.2)
 
 File (5): index.html, sw.js, icon.png, icon-512.png, manifest.json
+
+## Novità della 4.2: la tua Golf e il nome del paese
+- Nel riquadro del tachimetro c'è la **foto della tua auto** con il nome sotto (**Golf7**).
+- **Per mettere la foto (una volta sola):** salva sull'iPad l'immagine **Golf7-ritagliata.png** (te l'ha mandata Claude; è anche in D:\Daniele\Documents\iCar). Poi in iCar tocca la macchina nel riquadro → **Scegli la foto** → prendila da Foto o da File. La foto resta salvata solo sull'iPad (ed entra nella "Salva copia").
+- Toccando la macchina puoi anche **cambiare il nome** o **togliere la foto**; si fa anche da Impostazioni → Guida → "La mia auto".
+- L'**avviso di velocità** c'è ancora: tocca il tachimetro per cambiarlo; quando è attivo compare un piccolo cartello rosso sul tachimetro.
+- Nel riquadro meteo, sotto la data, c'è il **nome del paese** in cui ti trovi (si aggiorna quando ti sposti).
 
 ## Novità della 4.1: meteo animato in cima, tachimetro sottile
 - Il riquadro con **ora, data e meteo** è il primo in alto, ed è animato: lo sfondo cambia colore con il tempo; il sole gira, di notte compaiono luna e stelle, con nuvole, pioggia e neve si vedono scorrere o cadere, col temporale ogni tanto un lampo. I due punti dell'ora lampeggiano piano.
