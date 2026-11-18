@@ -448,7 +448,7 @@ body.night.dim #dimLayer{opacity:.28}
       <div class="topbar"><button class="back" data-go="dash"></button><h2>Telefono</h2>
         <div class="seg"><button data-ph="favs" class="on">Preferiti</button><button data-ph="book">Contatti</button><button data-ph="recents">Recenti</button><button data-ph="keypad">Tastierino</button></div></div>
       <div id="phoneBody">
-        <div class="native"><button class="pbtn glass press" id="nPhone"></button><button class="pbtn glass press" id="nRecents"></button></div>
+        <div class="native"><button class="pbtn glass press" id="nPhone"></button></div>
         <div id="favs"></div>
         <div id="book" class="phList" style="display:none"></div>
         <div id="callList" class="phList" style="display:none"></div>
@@ -1280,14 +1280,19 @@ async function handleVoice(raw){
 /* ================= telefono ================= */
 let phTab='favs', kp='', bookQ='';
 document.querySelectorAll('[data-ph]').forEach(b=>b.onclick=()=>{ phTab=b.dataset.ph; renderPhone(); });
-$('#nPhone').innerHTML=gly('phone')+'App Telefono dell’iPad';
-$('#nRecents').innerHTML=gly('list')+'Tutte le chiamate recenti';
-function openNative(deep){
-  if((S.phoneSc||'').trim()){ window.location.href='shortcuts://run-shortcut?name='+enc(S.phoneSc.trim()); return; }
-  openURL(deep);
+$('#nPhone').innerHTML=gly('phone')+'Apri l’app Telefono dell’iPad (tutte le chiamate e i contatti)';
+function openNative(){
+  const n=(S.phoneSc||'').trim();
+  if(n){ window.location.href='shortcuts://run-shortcut?name='+enc(n); return; }
+  phoneSetup();
 }
-$('#nPhone').onclick=()=>openNative('mobilephone://');
-$('#nRecents').onclick=()=>openNative('mobilephone-recents://');
+function phoneSetup(){
+  choose('Collega l’app Telefono (una volta sola)',[
+    ['1. Apri Comandi rapidi e crea il comando','blue',()=>{ window.location.href='shortcuts://create-shortcut'; }],
+    ['2. Fatto: il comando si chiama “Apri Telefono”','green',()=>{ S.phoneSc='Apri Telefono'; save(); toast('Collegato! Tocca di nuovo il tasto quando vuoi'); setTimeout(()=>{ window.location.href='shortcuts://run-shortcut?name='+enc('Apri Telefono'); },600); }]
+  ],'L’iPad non permette a iCar di aprire direttamente l’app Telefono, ma un Comando rapido sì. In Comandi rapidi: tocca “Aggiungi azione”, cerca “Apri app”, scegli l’app Telefono, poi in alto rinomina il comando in “Apri Telefono” e tocca Fine. Torna in iCar e tocca il punto 2.');
+}
+$('#nPhone').onclick=openNative;
 const TYPE={CELL:'cellulare',MOBILE:'cellulare',HOME:'casa',WORK:'lavoro',MAIN:'principale',IPHONE:'iPhone',OTHER:'altro'};
 function avatar(n){ return '<span class="avatar">'+esc((n||'?').trim().charAt(0).toUpperCase())+'</span>'; }
 function isFav(num){ const k=normNum(num); return S.contacts.some(c=>normNum(c.num)===k); }
@@ -1336,7 +1341,7 @@ function renderBook(){
 }
 function renderRecentCalls(){
   const box=$('#callList'), C=S.calls||[];
-  let h='<div class="note">Qui vedi le chiamate fatte da iCar. Per tutte le chiamate (anche ricevute e perse) tocca “Tutte le chiamate recenti” in alto: si apre l’app Telefono dell’iPad.</div>';
+  let h='<div class="note">Qui vedi le chiamate fatte da iCar. Per tutte le chiamate (anche ricevute e perse) tocca il tasto in alto: si apre l’app Telefono dell’iPad.</div>';
   if(!C.length) h+='<div class="phEmpty">Nessuna chiamata fatta da iCar</div>';
   const today=new Date().toDateString(), yest=new Date(Date.now()-864e5).toDateString();
   C.forEach((x,i)=>{ const d=new Date(x.t), day=d.toDateString()===today?'oggi':d.toDateString()===yest?'ieri':d.getDate()+'/'+(d.getMonth()+1);
@@ -1479,7 +1484,7 @@ function renderSettings(){
   S.contacts.forEach((c,i)=>{ h+='<div class="row"><span class="mini" style="background:'+G.gray+'">'+gly('user')+'</span><label>'+esc(c.name)+'<br><small>'+esc(c.num)+'</small></label><button class="btn red" data-delc="'+i+'">Elimina</button></div>'; });
   h+='<div class="row"><label>Contatti preferiti</label><button class="btn" id="addC">+ Aggiungi contatto</button></div>';
   h+='<div class="row"><label>Contatti importati<br><small>'+(S.book||[]).length+' contatti salvati su questo iPad</small></label><button class="btn" id="goBook">Gestisci</button></div>';
-  h+='<div class="row"><label>Comando per aprire l’app Telefono (facoltativo)<br><small>Se il tasto “App Telefono” non funziona: crea un Comando rapido con “Apri app → Telefono” e scrivi qui il nome</small></label><input type="text" id="sPhSc" value="'+esc(S.phoneSc||'')+'" placeholder="es. Apri Telefono"></div></div>';
+  h+='<div class="row"><label>Comando per aprire l’app Telefono<br><small>Nome del Comando rapido con “Apri app → Telefono” (di solito “Apri Telefono”)</small></label><input type="text" id="sPhSc" value="'+esc(S.phoneSc||'')+'" placeholder="es. Apri Telefono"></div></div>';
 
   h+='<div class="gtitle">App</div><div class="note">Accendi o spegni le app, cambia l’ordine con le frecce. Con “Aggiungi app” scegli tra decine di app o colleghi qualsiasi app tramite Comandi rapidi.</div><div class="group glass">';
   h+='<div class="row"><label><b>Aggiungi app</b></label><button class="btn blue" id="openCat">Scegli app</button></div>';
@@ -1503,7 +1508,7 @@ function renderSettings(){
   h+='</div>';
 
   h+='<div class="gtitle">Ripristino</div><div class="group glass"><div class="row"><label>Riporta tutto come all’inizio</label><button class="btn red" id="reset">Ripristina</button></div></div>';
-  h+='<div class="note" style="text-align:center">iCar 3.7 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
+  h+='<div class="note" style="text-align:center">iCar 3.7.1 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
   $('#setBody').innerHTML=h;
 
   const on=(id,ev,f)=>{ const e=document.getElementById(id); if(e) e[ev]=f; };
