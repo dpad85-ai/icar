@@ -769,17 +769,29 @@ function drawRoute(){
   if(NAV.snap) NAV.snap=null;
 }
 /* ================= GOOGLE MAPS (con chiave personale) ================= */
-const GM={on:false,map:null,me:null,arrow:null,dest:null,line:null,casing:null,geomRef:null,prog:false,loading:false};
+const GM={state:'',on:false,map:null,me:null,arrow:null,dest:null,line:null,casing:null,geomRef:null,prog:false,loading:false};
 const GM_NIGHT=[{elementType:'geometry',stylers:[{color:'#1d2633'}]},{elementType:'labels.text.stroke',stylers:[{color:'#1d2633'}]},{elementType:'labels.text.fill',stylers:[{color:'#8a94a6'}]},
  {featureType:'road',elementType:'geometry',stylers:[{color:'#38414e'}]},{featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#212a37'}]},{featureType:'road',elementType:'labels.text.fill',stylers:[{color:'#9ca5b3'}]},
  {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#5b5f6b'}]},{featureType:'water',elementType:'geometry',stylers:[{color:'#0f1a2b'}]},{featureType:'poi',elementType:'labels.icon',stylers:[{visibility:'off'}]},{featureType:'transit',stylers:[{visibility:'off'}]}];
+function gkMask(show){ const k=(S.gKey||'').trim(); if(!k) return ''; return show?k:'•••••••••••• '+k.slice(-4); }
+function gkStatus(){
+  if(!S.gKey) return 'Non inserita: la mappa è OpenStreetMap. Con la chiave hai Google Maps normale e satellite.';
+  const st=GM.state||(S.gKeyOk===true?'ok':S.gKeyOk===false?'bad':'');
+  if(st==='ok') return '<span style="color:var(--green);font-weight:700">✓ Chiave valida</span> · Google Maps attivo';
+  if(st==='bad') return '<span style="color:var(--red);font-weight:700">✗ Chiave non valida</span> · controlla chiave e restrizioni';
+  if(st==='checking') return 'Verifica in corso…';
+  if(st==='neterr') return 'Non verificata: serve la connessione a internet';
+  return 'Da verificare';
+}
+function gkSetState(st){ GM.state=st; if(st==='ok'||st==='bad'){ S.gKeyOk=(st==='ok'); save(); } if(current==='settings') renderSettings(); }
 function gmLoad(){
   const k=(S.gKey||'').trim(); if(!k||GM.loading) return; GM.loading=true;
   window.__icarGm=()=>{ try{ gmInit(); }catch(e){ GM.on=false; document.body.classList.remove('gm'); toast('Google Maps non disponibile, uso OpenStreetMap'); } };
-  window.gm_authFailure=()=>{ GM.on=false; document.body.classList.remove('gm'); renderType(); if(current==='dash') mapReset(); toast('Chiave Google Maps non valida: controlla la chiave e le restrizioni'); };
+  window.gm_authFailure=()=>{ gkSetState('bad'); GM.on=false; document.body.classList.remove('gm'); renderType(); if(current==='dash') mapReset(); toast('Chiave Google Maps non valida: controlla la chiave e le restrizioni'); };
   const sc=document.createElement('script');
   sc.src='https://maps.googleapis.com/maps/api/js?key='+enc(k)+'&callback=__icarGm&language=it&region=IT&v=weekly&loading=async';
-  sc.async=true; sc.onerror=()=>{ GM.loading=false; toast('Google Maps non raggiungibile, uso OpenStreetMap'); };
+  sc.async=true; sc.onerror=()=>{ GM.loading=false; gkSetState('neterr'); toast('Google Maps non raggiungibile, uso OpenStreetMap'); };
+  gkSetState('checking');
   document.head.appendChild(sc);
 }
 function gmInit(){
@@ -790,6 +802,7 @@ function gmInit(){
   GM.map.addListener('zoom_changed',()=>{ if(GM.prog) return; const z=GM.map.getZoom(); if(z!=null && z!==M.z){ M.z=z; M.zManual=true; $('#recenter').style.display='grid'; } });
   GM.map.addListener('idle',()=>{ if(!M.follow){ const c=GM.map.getCenter(); if(c){ M.lat=c.lat(); M.lon=c.lng(); } } });
   GM.on=true; document.body.classList.add('gm'); renderType();
+  setTimeout(()=>{ if(GM.state==='checking') gkSetState('ok'); },5000);
   if(current==='dash'){ layoutFocus(); gmSync(false); }
 }
 function gmCenter(){
@@ -840,7 +853,7 @@ function renderType(){
 $('#typeBtn').onclick=()=>{
   if(!GM.on){
     return choose('Vista satellite e mappa Google',[
-      ['Inserisci la chiave Google','blue',()=>{ show('settings'); setTimeout(()=>{ const e=document.getElementById('sGKey'); if(e){ e.scrollIntoView({block:'center'}); e.focus(); } },200); }]
+      ['Inserisci la chiave Google','blue',()=>{ show('settings'); setTimeout(()=>{ const e=document.getElementById('gkRow'); if(e){ e.scrollIntoView({block:'center'}); const b=document.getElementById('gkChange'); if(b) b.click(); } },200); }]
     ],'Per avere la mappa di Google Maps (normale e satellite) serve una chiave Google personale, gratuita fino a 10.000 aperture al mese. La trovi spiegata nella guida di iCar. Senza chiave iCar usa OpenStreetMap.');
   }
   S.mtype=S.mtype==='hybrid'?'roadmap':'hybrid'; save();
@@ -1417,12 +1430,15 @@ function renderSettings(){
   h+='<div class="row"><label>Tieni lo schermo acceso</label>'+sw('sWake',S.wake)+'</div>';
   h+='<div class="row"><label>Mappa scura (notte)</label>'+sel('sNight',[['auto','Dopo il tramonto'],['on','Sempre'],['off','Mai']],S.night)+'</div>';
   h+='<div class="row"><label>Di notte abbassa la luminosità</label>'+sw('sDim',S.dim)+'</div>';
-  h+='<div class="row"><label>Chiave Google Maps<br><small>Con la tua chiave la mappa principale diventa Google Maps, con vista normale e satellite. Lascia vuoto per OpenStreetMap.</small></label><input type="text" id="sGKey" value="'+esc(S.gKey||'')+'" placeholder="Incolla la chiave Google" autocapitalize="off" autocorrect="off" spellcheck="false"></div>';
+  h+='<div class="row" id="gkRow"><label>Chiave Google Maps<br><small>'+gkStatus()+'</small></label>'+(S.gKey?'<span class="num" id="gkVal" style="color:var(--dim);font-size:15px;letter-spacing:1px">'+gkMask(false)+'</span><button class="btn" id="gkShow">Mostra</button><button class="btn" id="gkChange">Cambia</button><button class="btn red" id="gkDel">Rimuovi</button>':'<button class="btn blue" id="gkChange">Inserisci chiave</button>')+'</div>';
   h+='<div class="row"><label>Tipo di mappa Google</label>'+sel('sMtype',[['roadmap','Mappa normale'],['hybrid','Satellite']],S.mtype||'roadmap')+'</div>';
   h+='</div>';
 
-  h+='<div class="gtitle">Ripristino</div><div class="group glass"><div class="row"><label>Riporta tutto come all’inizio</label><button class="btn red" id="reset">Ripristina</button></div></div>';
-  h+='<div class="note" style="text-align:center">iCar 3.8 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
+  h+='<div class="gtitle">Copia di sicurezza</div><div class="note">Salva in un file tutte le impostazioni di iCar, compresa la chiave Google Maps, i contatti e i preferiti. Se togli iCar dalla schermata Home o cancelli i dati di Safari, le ricarichi da quel file.</div><div class="group glass">';
+  h+='<div class="row"><label>Salva le impostazioni in un file<br><small>'+(S.lastBackup?'Ultima copia: '+new Date(S.lastBackup).toLocaleDateString('it-IT'):'Nessuna copia salvata')+'</small></label><button class="btn blue" id="bkSave">Salva copia</button></div>';
+  h+='<div class="row"><label>Ricarica le impostazioni da un file</label><button class="btn" id="bkLoad">Carica copia</button></div></div>';
+  h+='<div class="gtitle">Ripristino</div><div class="group glass"><div class="row"><label>Riporta tutto come all’inizio<br><small>La chiave Google Maps resta salvata</small></label><button class="btn red" id="reset">Ripristina</button></div></div>';
+  h+='<div class="note" style="text-align:center">iCar 3.8.1 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
   $('#setBody').innerHTML=h;
 
   const on=(id,ev,f)=>{ const e=document.getElementById(id); if(e) e[ev]=f; };
@@ -1454,10 +1470,31 @@ function renderSettings(){
   on('sWake','onchange',e=>{S.wake=e.target.checked;save();if(S.wake)requestWake();else releaseWake();});
   on('sNight','onchange',e=>{S.night=e.target.value;save();applyNight();});
   on('sDim','onchange',e=>{S.dim=e.target.checked;save();applyNight();});
-  on('sGKey','onchange',e=>{ S.gKey=e.target.value.trim(); save(); toast(S.gKey?'Chiave salvata: riapro iCar con Google Maps':'Torno a OpenStreetMap'); setTimeout(()=>location.reload(),1200); });
+  let gkShown=false;
+  on('gkShow','onclick',()=>{ gkShown=!gkShown; $('#gkVal').textContent=gkMask(gkShown); $('#gkShow').textContent=gkShown?'Nascondi':'Mostra'; if(gkShown) setTimeout(()=>{ if(gkShown && $('#gkShow')) $('#gkShow').click(); },8000); });
+  on('gkChange','onclick',()=>ask('Chiave Google Maps',[{ph:'Incolla qui la chiave',type:'password'}],v=>{ const k=v[0].trim(); if(!k) return;
+    S.gKey=k; S.gKeyOk=null; save(); toast('Chiave salvata: riapro iCar e la verifico'); setTimeout(()=>location.reload(),1200); },'Salva','La chiave resta nascosta e salvata solo su questo iPad.'));
+  on('gkDel','onclick',()=>choose('Rimuovere la chiave Google Maps?',[['Rimuovi','red',()=>{ S.gKey=''; S.gKeyOk=null; save(); toast('Torno a OpenStreetMap'); setTimeout(()=>location.reload(),1000); }]],'iCar tornerà a usare la mappa OpenStreetMap.'));
   on('sMtype','onchange',e=>{ S.mtype=e.target.value; save(); if(GM.map) GM.map.setMapTypeId(S.mtype); renderType(); });
-  on('reset','onclick',()=>ask('Ripristinare tutto? Scrivi SI per confermare',[{ph:'SI'}],v=>{ if(v[0].trim().toUpperCase()==='SI'){ S=JSON.parse(JSON.stringify(DEF)); T=tripNew(); save(); applyWall(); renderRecents(); renderSettings(); toast('Ripristinato'); } },'Conferma'));
+  on('bkSave','onclick',backupSave);
+  on('bkLoad','onclick',()=>bkIn.click());
+  on('reset','onclick',()=>ask('Ripristinare tutto? Scrivi SI per confermare',[{ph:'SI'}],v=>{ if(v[0].trim().toUpperCase()==='SI'){ const keep={gKey:S.gKey,gKeyOk:S.gKeyOk,phoneSc:S.phoneSc}; S=Object.assign(JSON.parse(JSON.stringify(DEF)),keep); T=tripNew(); save(); applyWall(); renderRecents(); renderSettings(); toast('Ripristinato'); } },'Conferma'));
 }
+/* copia di sicurezza delle impostazioni */
+function backupSave(){
+  S.lastBackup=Date.now(); save();
+  const data=JSON.stringify(Object.assign({app:'iCar',saved:new Date().toISOString()},S),null,1);
+  const blob=new Blob([data],{type:'application/json'}), url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='iCar-impostazioni.json'; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },3000);
+  toast('Salva il file in “File” (es. iCloud Drive) per ritrovarlo sempre'); renderSettings();
+}
+const bkIn=document.createElement('input'); bkIn.type='file'; bkIn.accept='.json,application/json'; bkIn.style.display='none'; document.body.appendChild(bkIn);
+bkIn.onchange=()=>{ const f=bkIn.files&&bkIn.files[0]; if(!f) return; const rd=new FileReader();
+  rd.onload=()=>{ try{ const d=JSON.parse(String(rd.result)); if(d.app!=='iCar') throw 0; delete d.app; delete d.saved;
+      S=Object.assign(JSON.parse(JSON.stringify(DEF)),d); save(); toast('Impostazioni ricaricate'); setTimeout(()=>location.reload(),1000);
+    }catch(e){ toast('Questo file non è una copia di iCar'); } bkIn.value=''; };
+  rd.readAsText(f); };
 function applyWall(){ const w=WALL[S.wall]||WALL.blu; document.documentElement.style.setProperty('--wp1',w[0]); document.documentElement.style.setProperty('--wp2',w[1]); }
 
 /* ================= schermo acceso ================= */
@@ -1477,6 +1514,7 @@ function tick(){ const d=new Date(), t=hm(d); $('#sideClock').textContent=t; $('
 if('speechSynthesis' in window){ try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{}; }catch(e){} }
 applyWall(); applyLayout(); renderType(); tick(); setInterval(tick,10000); gmLoad();
 renderRecents(); show(S.start==='home'?'home':'dash');
+try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{}); }catch(e){}
 if('serviceWorker' in navigator && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 window.__icar={S:S,M:M,NAV:NAV,handleVoice:handleVoice,preview:preview};
 })();
