@@ -1,5 +1,5 @@
 // iCar: fa aprire l'app anche senza internet (usa l'ultima versione salvata)
-const CACHE = 'icar-v7';
+const CACHE = 'icar-v8';
 const FILES = ['./', 'index.html', 'manifest.json', 'icon.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {

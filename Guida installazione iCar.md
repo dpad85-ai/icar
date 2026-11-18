@@ -1,6 +1,14 @@
-# iCar – guida all'installazione su iPad (versione 4.2.1)
+# iCar – guida all'installazione su iPad (versione 4.3)
 
 File (6): index.html, sw.js, icon.png, icon-512.png, manifest.json, golf7.png
+
+## Novità della 4.3: icona personalizzata (es. Jarvis)
+L'iPad non permette a iCar di leggere l'icona di un Comando rapido, quindi la scegli tu da un'immagine:
+1. Fai uno screenshot dove si vede l'icona (per esempio nell'app Comandi rapidi).
+2. In iCar → **Impostazioni → App** → accanto a Jarvis (o a un'altra app aggiunta da te) tocca **Icona** → **Scegli immagine** e prendi lo screenshot.
+3. Trascina l'immagine e usa il cursore per ingrandire finché l'icona riempie il quadrato → **Usa**.
+
+Per rimettere l'icona di prima: **Icona → Torna all'icona di iCar**. L'immagine resta salvata sull'iPad ed entra nella "Salva copia".
 
 ## Novità della 4.2.1: riquadri riordinati e Golf già pronta
 - Ordine dei riquadri: meteo, tachimetro con la Golf, computer di bordo e per ultimo **Audio e app**.
