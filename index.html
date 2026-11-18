@@ -64,6 +64,11 @@ svg{display:block}
 #map{position:absolute;inset:0;overflow:hidden;background:#1c1e24;touch-action:none;cursor:grab}
 body.day #map{background:#e8e4dc}
 #mapLayer{position:absolute;left:0;top:0;will-change:transform}
+#gmap{position:absolute;inset:0;display:none;z-index:1}
+body.gm #gmap{display:block}
+body.gm #mapLayer,body.gm #attrib{display:none}
+#typeBtn{color:var(--accent)}
+#gmap .gm-style-cc,#gmap .gmnoprint a{font-size:9px}
 #mapLayer img.t{position:absolute;width:256px;height:256px;opacity:0;transition:opacity .35s;pointer-events:none;-webkit-user-drag:none}
 #mapLayer img.t.on{opacity:1}
 body.night #mapLayer.osm img.t{filter:invert(.92) hue-rotate(180deg) brightness(.9) contrast(.88) saturate(.7)}
@@ -357,7 +362,7 @@ body.night.dim #dimLayer{opacity:.28}
   <main id="main">
     <!-- DASHBOARD -->
     <section class="view" id="dash">
-      <div id="map"><div id="mapLayer"><svg id="routeSvg"></svg><div id="destPin"></div><div id="me"><b></b><i></i></div></div></div>
+      <div id="map"><div id="gmap"></div><div id="mapLayer"><svg id="routeSvg"></svg><div id="destPin"></div><div id="me"><b></b><i></i></div></div></div>
       <div id="attrib">© OpenStreetMap</div>
 
       <div class="ov glass" id="searchBox">
@@ -374,6 +379,7 @@ body.night.dim #dimLayer{opacity:.28}
         <button class="glass press" id="zoomIn" aria-label="Avvicina"></button>
         <button class="glass press" id="zoomOut" aria-label="Allontana"></button>
         <button class="glass press" id="recenter" aria-label="Centra"></button>
+        <button class="glass press" id="typeBtn" aria-label="Mappa o satellite"></button>
         <button class="glass press" id="layBtn" aria-label="Cambia schermata"></button>
       </div>
       <div class="ov glass" id="miniSpeed"><b class="num" id="msVal">--</b><small>km/h</small></div>
@@ -578,7 +584,7 @@ function enc(s){return encodeURIComponent(String(s).trim())}
 
 /* ================= stato salvato ================= */
 const KEY='icar.v1';
-const DEF = {v:3, layout:'wgt', nav:'google', h24:true, wake:true, wall:'blu', call:'tel', start:'dash',
+const DEF = {v:3, layout:'wgt', gKey:'', mtype:'roadmap', nav:'google', h24:true, wake:true, wall:'blu', call:'tel', start:'dash',
   home:'', work:'', homeLL:null, workLL:null, places:[], contacts:[], hidden:[], custom:[], order:[], recent:['gmaps','music','phone'],
   night:'auto', dim:true, limit:0, beep:true, parked:null, voice:true, trip:null, trips:[], lastPos:null, audio:['music','spotify','pod','wa']};
 let S;
@@ -693,6 +699,7 @@ function layoutFocus(){
   M.fy=document.body.classList.contains('nav') ? (h-bottom)*0.66 : (h-bottom)/2;
 }
 function mapReset(){
+  if(GM.on){ gmSync(false); return; }
   mapProvider();
   layer.querySelectorAll('img.t').forEach(i=>i.remove()); M.tiles={};
   M.ox=Math.round(lon2x(M.lon,M.z)); M.oy=Math.round(lat2y(M.lat,M.z));
@@ -700,6 +707,7 @@ function mapReset(){
 }
 function mapDraw(anim){
   if(current!=='dash') return;
+  if(GM.on){ gmSync(anim); return; }
   const w=mapEl.clientWidth||900, h=mapEl.clientHeight||700, cx=lon2x(M.lon,M.z), cy=lat2y(M.lat,M.z);
   if(!M.fx) layoutFocus();
   const fx=M.fx, fy=M.fy;
@@ -719,6 +727,7 @@ function mapDraw(anim){
   $('#recenter').style.display=M.follow&&!M.zManual?'none':'grid';
 }
 function placeMe(){
+  if(GM.on){ gmMarkers(); return; }
   const me=$('#me'); if(!pos){ me.style.display='none'; return; }
   me.style.display='block';
   me.style.left=(lon2x(pos.lon,M.z)-M.ox)+'px'; me.style.top=(lat2y(pos.lat,M.z)-M.oy)+'px';
@@ -730,6 +739,7 @@ function placeMe(){
   me.classList.toggle('nav',NAV.active);
 }
 function drawRoute(){
+  if(GM.on){ gmRoute(); return; }
   const sv=$('#routeSvg'), pin=$('#destPin');
   if(!NAV.geom){ sv.style.display='none'; pin.style.display='none'; return; }
   const w=mapEl.clientWidth||900, h=mapEl.clientHeight||700, cx=lon2x(M.lon,M.z)-M.ox, cy=lat2y(M.lat,M.z)-M.oy;
@@ -747,10 +757,89 @@ function drawRoute(){
   if(!pin.innerHTML) pin.innerHTML='<svg viewBox="0 0 38 46"><path d="M19 45s-16-14.5-16-26a16 16 0 0 1 32 0c0 11.5-16 26-16 26z" fill="#ff375f" stroke="#fff" stroke-width="2.5"/><circle cx="19" cy="19" r="6" fill="#fff"/></svg>';
   if(NAV.snap) NAV.snap=null;
 }
+/* ================= GOOGLE MAPS (con chiave personale) ================= */
+const GM={on:false,map:null,me:null,arrow:null,dest:null,line:null,casing:null,geomRef:null,prog:false,loading:false};
+const GM_NIGHT=[{elementType:'geometry',stylers:[{color:'#1d2633'}]},{elementType:'labels.text.stroke',stylers:[{color:'#1d2633'}]},{elementType:'labels.text.fill',stylers:[{color:'#8a94a6'}]},
+ {featureType:'road',elementType:'geometry',stylers:[{color:'#38414e'}]},{featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#212a37'}]},{featureType:'road',elementType:'labels.text.fill',stylers:[{color:'#9ca5b3'}]},
+ {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#5b5f6b'}]},{featureType:'water',elementType:'geometry',stylers:[{color:'#0f1a2b'}]},{featureType:'poi',elementType:'labels.icon',stylers:[{visibility:'off'}]},{featureType:'transit',stylers:[{visibility:'off'}]}];
+function gmLoad(){
+  const k=(S.gKey||'').trim(); if(!k||GM.loading) return; GM.loading=true;
+  window.__icarGm=()=>{ try{ gmInit(); }catch(e){ GM.on=false; document.body.classList.remove('gm'); toast('Google Maps non disponibile, uso OpenStreetMap'); } };
+  window.gm_authFailure=()=>{ GM.on=false; document.body.classList.remove('gm'); renderType(); if(current==='dash') mapReset(); toast('Chiave Google Maps non valida: controlla la chiave e le restrizioni'); };
+  const sc=document.createElement('script');
+  sc.src='https://maps.googleapis.com/maps/api/js?key='+enc(k)+'&callback=__icarGm&language=it&region=IT&v=weekly&loading=async';
+  sc.async=true; sc.onerror=()=>{ GM.loading=false; toast('Google Maps non raggiungibile, uso OpenStreetMap'); };
+  document.head.appendChild(sc);
+}
+function gmInit(){
+  const g=google.maps;
+  GM.map=new g.Map($('#gmap'),{center:{lat:M.lat,lng:M.lon},zoom:M.z,disableDefaultUI:true,gestureHandling:'greedy',clickableIcons:false,keyboardShortcuts:false,
+    mapTypeId:S.mtype==='hybrid'?'hybrid':'roadmap',backgroundColor:'#1c1e24',tilt:0,styles:M.style==='night'?GM_NIGHT:null});
+  GM.map.addListener('dragstart',()=>{ M.follow=false; $('#recenter').style.display='grid'; });
+  GM.map.addListener('zoom_changed',()=>{ if(GM.prog) return; const z=GM.map.getZoom(); if(z!=null && z!==M.z){ M.z=z; M.zManual=true; $('#recenter').style.display='grid'; } });
+  GM.map.addListener('idle',()=>{ if(!M.follow){ const c=GM.map.getCenter(); if(c){ M.lat=c.lat(); M.lon=c.lng(); } } });
+  GM.on=true; document.body.classList.add('gm'); renderType();
+  if(current==='dash'){ layoutFocus(); gmSync(false); }
+}
+function gmCenter(){
+  // centro della mappa spostato in modo che la posizione cada nel punto di fuoco (non sotto i riquadri)
+  const w=mapEl.clientWidth||900, h=mapEl.clientHeight||700; if(!M.fx) layoutFocus();
+  const cx=lon2x(M.lon,M.z)+(w/2-M.fx), cy=lat2y(M.lat,M.z)+(h/2-M.fy);
+  return {lat:y2lat(cy,M.z),lng:x2lon(cx,M.z)};
+}
+function gmSync(anim){
+  if(!GM.map) return;
+  GM.prog=true;
+  const c=gmCenter();
+  if(GM.map.getZoom()!==M.z || !anim) GM.map.moveCamera({center:c,zoom:M.z}); else GM.map.panTo(c);
+  setTimeout(()=>{GM.prog=false;},50);
+  gmMarkers(); gmRoute();
+  $('#recenter').style.display=M.follow&&!M.zManual?'none':'grid';
+}
+function gmMarkers(){
+  const g=window.google&&google.maps; if(!g||!GM.map) return;
+  if(!pos){ if(GM.me) GM.me.setMap(null); if(GM.arrow) GM.arrow.setMap(null); return; }
+  const ll={lat:pos.lat,lng:pos.lon};
+  if(!GM.me) GM.me=new g.Marker({map:GM.map,zIndex:900,clickable:false,icon:{path:g.SymbolPath.CIRCLE,scale:12,fillColor:'#0a84ff',fillOpacity:1,strokeColor:'#ffffff',strokeWeight:4}});
+  GM.me.setMap(GM.map); GM.me.setPosition(ll);
+  if(pos.heading!=null && !isNaN(pos.heading)){
+    if(!GM.arrow) GM.arrow=new g.Marker({map:GM.map,zIndex:901,clickable:false});
+    GM.arrow.setIcon({path:'M0 -7 5 6 0 3 -5 6z',scale:1.3,fillColor:'#ffffff',fillOpacity:1,strokeWeight:0,rotation:pos.heading,anchor:new g.Point(0,0)});
+    GM.arrow.setMap(GM.map); GM.arrow.setPosition(ll);
+  } else if(GM.arrow) GM.arrow.setMap(null);
+}
+function gmRoute(){
+  const g=window.google&&google.maps; if(!g||!GM.map) return;
+  if(!NAV.geom){ [GM.line,GM.casing,GM.dest].forEach(o=>o&&o.setMap(null)); GM.geomRef=null; return; }
+  const start=NAV.active?Math.max(0,NAV.si):0;
+  const path=NAV.geom.slice(start).map(p=>({lat:p[1],lng:p[0]}));
+  if(NAV.active && pos) path.unshift({lat:pos.lat,lng:pos.lon});
+  if(!GM.casing) GM.casing=new g.Polyline({strokeColor:'#0a3d91',strokeOpacity:.6,strokeWeight:13,zIndex:10,clickable:false});
+  if(!GM.line) GM.line=new g.Polyline({strokeColor:'#2f8bff',strokeOpacity:1,strokeWeight:8,zIndex:11,clickable:false});
+  GM.casing.setPath(path); GM.line.setPath(path); GM.casing.setMap(GM.map); GM.line.setMap(GM.map);
+  if(!GM.dest) GM.dest=new g.Marker({clickable:false,zIndex:800});
+  GM.dest.setPosition({lat:NAV.dest.lat,lng:NAV.dest.lon}); GM.dest.setMap(GM.map);
+}
+function gmStyle(){ if(GM.map) GM.map.setOptions({styles:M.style==='night'?GM_NIGHT:null}); }
+function renderType(){
+  const sat=S.mtype==='hybrid';
+  $('#typeBtn').innerHTML=sat?svg('map'):gly('globe');
+  $('#typeBtn').setAttribute('aria-label',sat?'Mappa normale':'Satellite');
+}
+$('#typeBtn').onclick=()=>{
+  if(!GM.on){
+    return choose('Vista satellite e mappa Google',[
+      ['Inserisci la chiave Google','blue',()=>{ show('settings'); setTimeout(()=>{ const e=document.getElementById('sGKey'); if(e){ e.scrollIntoView({block:'center'}); e.focus(); } },200); }]
+    ],'Per avere la mappa di Google Maps (normale e satellite) serve una chiave Google personale, gratuita fino a 10.000 aperture al mese. La trovi spiegata nella guida di iCar. Senza chiave iCar usa OpenStreetMap.');
+  }
+  S.mtype=S.mtype==='hybrid'?'roadmap':'hybrid'; save();
+  GM.map.setMapTypeId(S.mtype); renderType(); toast(S.mtype==='hybrid'?'Vista satellite':'Mappa normale');
+};
+
 // trascina la mappa
 (function(){
   let drag=null, moved=false, lastTap=0;
-  mapEl.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY,cx:lon2x(M.lon,M.z),cy:lat2y(M.lat,M.z)}; moved=false; mapEl.setPointerCapture(e.pointerId); });
+  mapEl.addEventListener('pointerdown',e=>{ if(GM.on) return; drag={x:e.clientX,y:e.clientY,cx:lon2x(M.lon,M.z),cy:lat2y(M.lat,M.z)}; moved=false; mapEl.setPointerCapture(e.pointerId); });
   mapEl.addEventListener('pointermove',e=>{ if(!drag) return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y;
     if(!moved && Math.hypot(dx,dy)<6) return; moved=true; M.follow=false;
     M.lon=x2lon(drag.cx-dx,M.z); M.lat=y2lat(drag.cy-dy,M.z); mapDraw(false); });
@@ -1102,7 +1191,7 @@ function isNight(){
 }
 function applyNight(){
   const n=isNight(); document.body.classList.toggle('night',n); document.body.classList.toggle('day',!n); document.body.classList.toggle('dim',!!S.dim);
-  const st=n?'night':'day'; if(st!==M.style){ M.style=st; if(current==='dash') mapReset(); }
+  const st=n?'night':'day'; if(st!==M.style){ M.style=st; if(GM.on) gmStyle(); else if(current==='dash') mapReset(); }
 }
 
 /* ================= comandi vocali ================= */
@@ -1282,10 +1371,12 @@ function renderSettings(){
   h+='<div class="row"><label>Tieni lo schermo acceso</label>'+sw('sWake',S.wake)+'</div>';
   h+='<div class="row"><label>Mappa scura (notte)</label>'+sel('sNight',[['auto','Dopo il tramonto'],['on','Sempre'],['off','Mai']],S.night)+'</div>';
   h+='<div class="row"><label>Di notte abbassa la luminosità</label>'+sw('sDim',S.dim)+'</div>';
+  h+='<div class="row"><label>Chiave Google Maps<br><small>Con la tua chiave la mappa principale diventa Google Maps, con vista normale e satellite. Lascia vuoto per OpenStreetMap.</small></label><input type="text" id="sGKey" value="'+esc(S.gKey||'')+'" placeholder="Incolla la chiave Google" autocapitalize="off" autocorrect="off" spellcheck="false"></div>';
+  h+='<div class="row"><label>Tipo di mappa Google</label>'+sel('sMtype',[['roadmap','Mappa normale'],['hybrid','Satellite']],S.mtype||'roadmap')+'</div>';
   h+='<div class="row"><label>Chiave mappe CARTO (facoltativa)<br><small>Senza chiave iCar usa OpenStreetMap. Con una chiave gratuita di carto.com/basemaps/apikey la mappa è più nitida e moderna.</small></label><input type="text" id="sKey" value="'+esc(S.cartoKey||'')+'" placeholder="Incolla la chiave" autocapitalize="off" autocorrect="off"></div></div>';
 
   h+='<div class="gtitle">Ripristino</div><div class="group glass"><div class="row"><label>Riporta tutto come all’inizio</label><button class="btn red" id="reset">Ripristina</button></div></div>';
-  h+='<div class="note" style="text-align:center">iCar 3.4 · mappe © OpenStreetMap · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
+  h+='<div class="note" style="text-align:center">iCar 3.5 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
   $('#setBody').innerHTML=h;
 
   const on=(id,ev,f)=>{ const e=document.getElementById(id); if(e) e[ev]=f; };
@@ -1315,6 +1406,8 @@ function renderSettings(){
   on('sWake','onchange',e=>{S.wake=e.target.checked;save();if(S.wake)requestWake();else releaseWake();});
   on('sNight','onchange',e=>{S.night=e.target.value;save();applyNight();});
   on('sDim','onchange',e=>{S.dim=e.target.checked;save();applyNight();});
+  on('sGKey','onchange',e=>{ S.gKey=e.target.value.trim(); save(); toast(S.gKey?'Chiave salvata: riapro iCar con Google Maps':'Torno a OpenStreetMap'); setTimeout(()=>location.reload(),1200); });
+  on('sMtype','onchange',e=>{ S.mtype=e.target.value; save(); if(GM.map) GM.map.setMapTypeId(S.mtype); renderType(); });
   on('sKey','onchange',e=>{S.cartoKey=e.target.value.trim();save();toast(S.cartoKey?'Mappe CARTO attive':'Mappe OpenStreetMap attive');});
   on('reset','onclick',()=>ask('Ripristinare tutto? Scrivi SI per confermare',[{ph:'SI'}],v=>{ if(v[0].trim().toUpperCase()==='SI'){ S=JSON.parse(JSON.stringify(DEF)); T=tripNew(); save(); applyWall(); renderRecents(); renderSettings(); toast('Ripristinato'); } },'Conferma'));
 }
@@ -1335,7 +1428,7 @@ function tick(){ const d=new Date(), t=hm(d); $('#sideClock').textContent=t; $('
 
 /* ================= avvio ================= */
 if('speechSynthesis' in window){ try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{}; }catch(e){} }
-applyWall(); applyLayout(); tick(); setInterval(tick,10000);
+applyWall(); applyLayout(); renderType(); tick(); setInterval(tick,10000); gmLoad();
 renderRecents(); show(S.start==='home'?'home':'dash');
 if('serviceWorker' in navigator && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 window.__icar={S:S,M:M,NAV:NAV,handleVoice:handleVoice,preview:preview};
