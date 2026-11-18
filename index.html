@@ -599,10 +599,10 @@ body.gm #map:after{z-index:2}
             <div class="val"><div id="speed" class="num">--</div><small>km/h</small></div><div id="limBadge" class="off">—</div></div>
           <button id="carBox" class="press" aria-label="La mia auto"><div id="carPic"></div><span id="carName"></span></button>
         </div>
-        <div class="wg glass" id="wAudio"><h4 id="wAudioH"></h4><div class="row4" id="mbtns"></div></div>
         <div class="wg glass" id="wTrip"><h4 id="wTripH"></h4>
           <div class="tg"><div><b id="tKm" class="num">0,0</b><small>km</small></div><div><b id="tTime" class="num">0:00</b><small>in viaggio</small></div><div><b id="tAvg" class="num">0</b><small>media km/h</small></div><div><b id="tMax" class="num">0</b><small>max km/h</small></div></div>
         </div>
+        <div class="wg glass" id="wAudio"><h4 id="wAudioH"></h4><div class="row4" id="mbtns"></div></div>
       </div>
     </section>
 
@@ -1124,10 +1124,12 @@ function updateSpeed(){
 function renderLimit(){ const b=$('#limBadge'); b.classList.toggle('off',!S.limit); b.textContent=S.limit||'—'; }
 /* la mia auto (foto e nome nel riquadro del tachimetro) */
 const CAR_SVG='<svg viewBox="0 0 220 96" aria-hidden="true"><defs><linearGradient id="cgB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f6fa"/><stop offset="1" stop-color="#aab3c2"/></linearGradient><linearGradient id="cgW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fc4ff"/><stop offset="1" stop-color="#2c4a78"/></linearGradient></defs><ellipse cx="110" cy="86" rx="98" ry="6" fill="rgba(0,0,0,.35)"/><path d="M14 66c0-9 4-16 14-18l28-6 26-20c5-4 11-6 18-6h48c8 0 14 3 18 9l16 22 18 4c9 2 14 9 14 18v6c0 4-3 7-7 7H21c-4 0-7-3-7-7z" fill="url(#cgB)"/><path d="M64 42l22-17c4-3 8-4 13-4h22v21z" fill="url(#cgW)"/><path d="M127 21h21c6 0 10 2 13 6l12 15h-46z" fill="url(#cgW)"/><path d="M18 58h196" stroke="rgba(0,0,0,.18)" stroke-width="2"/><rect x="196" y="50" width="14" height="7" rx="3" fill="#ff5a4e"/><rect x="16" y="52" width="14" height="6" rx="3" fill="#fff6c8"/><g fill="#1c1c1e"><circle cx="58" cy="76" r="15"/><circle cx="166" cy="76" r="15"/></g><g fill="#c7ccd6"><circle cx="58" cy="76" r="7"/><circle cx="166" cy="76" r="7"/></g></svg>';
+function carSrc(){ return S.carPhoto==='none'?'':(S.carPhoto||'golf7.png'); }
 function renderCar(){
   const p=$('#carPic'); if(!p) return;
-  const cut=/^data:image\/png/.test(S.carPhoto||''); p.classList.toggle('photo',!!S.carPhoto&&!cut); p.classList.toggle('cut',cut);
-  p.innerHTML=S.carPhoto?'<img alt="" src="'+S.carPhoto+'">':CAR_SVG;
+  const src=carSrc(), cut=!!src&&!/^data:image\/jpeg/.test(src); p.classList.toggle('photo',!!src&&!cut); p.classList.toggle('cut',cut);
+  p.innerHTML=src?'<img alt="" src="'+src+'">':CAR_SVG;
+  const im=p.querySelector('img'); if(im) im.onerror=()=>{ p.className=''; p.innerHTML=CAR_SVG; };
   $('#carName').textContent=S.carName||'La mia auto';
 }
 const carIn=document.createElement('input'); carIn.type='file'; carIn.accept='image/*'; carIn.style.display='none'; document.body.appendChild(carIn);
@@ -1140,7 +1142,7 @@ carIn.onchange=()=>{ const f=carIn.files&&carIn.files[0]; carIn.value=''; if(!f)
     try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){ S.carPhoto=old; return toast('Foto troppo grande, provane un’altra'); }
     renderCar(); if($('#settings').classList.contains('on')) renderSettings(); toast('Foto dell’auto salvata'); };
     im.onerror=()=>toast('Non riesco ad aprire questa foto'); im.src=rd.result; }; rd.readAsDataURL(f); };
-function carMenu(){ choose(S.carName||'La mia auto',[['Scegli la foto','blue',()=>carIn.click()],['Cambia il nome','',carRename]].concat(S.carPhoto?[['Togli la foto','red',()=>{S.carPhoto='';save();renderCar();}]]:[]),'Scegli una foto dell’auto. Se scegli un’immagine già ritagliata (file .png senza sfondo) si vede solo la macchina. Resta salvata solo su questo iPad.'); }
+function carMenu(){ choose(S.carName||'La mia auto',[['Scegli la foto','blue',()=>carIn.click()]].concat(S.carPhoto?[['Usa la Golf di iCar (targa DANY)','',()=>{S.carPhoto='';save();renderCar();}]]:[]).concat([['Cambia il nome','',carRename]]).concat(carSrc()?[['Togli la foto','red',()=>{S.carPhoto='none';save();renderCar();}]]:[]),'Scegli una foto dell’auto. Se scegli un’immagine già ritagliata (file .png senza sfondo) si vede solo la macchina. Resta salvata solo su questo iPad.'); }
 function carRename(){ ask('Nome dell’auto',[{ph:'es. Golf7',val:S.carName||''}],v=>{ S.carName=v[0].trim().slice(0,20); save(); renderCar(); if($('#settings').classList.contains('on')) renderSettings(); }); }
 $('#carBox').onclick=e=>{ e.stopPropagation(); carMenu(); };
 $('#miniSpeed').onclick=()=>$('#wSpeed').onclick();
@@ -1595,7 +1597,7 @@ function renderSettings(){
   h+='<div class="row"><label>Schermata della mappa<br><small>Si cambia anche col tasto sotto lo zoom</small></label>'+sel('sLay',LAYS.map(x=>[x[0],x[2]]),S.layout||'wgt')+'</div>';
   h+='<div class="row"><label>Avviso di velocità<br><small>Puoi cambiarlo anche toccando il tachimetro</small></label>'+sel('sLimit',[0,30,50,70,90,110,130].map(v=>[v,v?'Oltre '+v+' km/h':'Spento']),S.limit)+'</div>';
   h+='<div class="row"><label>Suono di avviso</label>'+sw('sBeep',S.beep)+'</div>';
-  h+='<div class="row"><span class="mini carmini">'+(S.carPhoto?'<img alt="" src="'+S.carPhoto+'">':CAR_SVG)+'</span><label>La mia auto<br><small>Foto e nome nel riquadro del tachimetro</small></label><input type="text" id="sCar" value="'+esc(S.carName||'')+'" placeholder="es. Golf7" maxlength="20"><button class="btn blue" id="carPick">'+(S.carPhoto?'Cambia foto':'Scegli foto')+'</button>'+(S.carPhoto?'<button class="btn red" id="carDel">Togli</button>':'')+'</div></div>';
+  h+='<div class="row"><span class="mini carmini">'+(carSrc()?'<img alt="" src="'+carSrc()+'">':CAR_SVG)+'</span><label>La mia auto<br><small>Foto e nome nel riquadro del tachimetro</small></label><input type="text" id="sCar" value="'+esc(S.carName||'')+'" placeholder="es. Golf7" maxlength="20"><button class="btn blue" id="carPick">'+(carSrc()?'Cambia foto':'Scegli foto')+'</button>'+(carSrc()?'<button class="btn red" id="carDel">Togli</button>':'')+'</div></div>';
 
   h+='<div class="gtitle">Computer di bordo · ultimi viaggi</div><div class="group glass">';
   if(!S.trips.length) h+='<div class="row"><label style="color:var(--dim)">Nessun viaggio salvato. Un viaggio si salva da solo dopo 10 minuti da fermo, o con “Nuovo viaggio”.</label></div>';
@@ -1636,7 +1638,7 @@ function renderSettings(){
   h+='<div class="row"><label>Salva le impostazioni in un file<br><small>'+(S.lastBackup?'Ultima copia: '+new Date(S.lastBackup).toLocaleDateString('it-IT'):'Nessuna copia salvata')+'</small></label><button class="btn blue" id="bkSave">Salva copia</button></div>';
   h+='<div class="row"><label>Ricarica le impostazioni da un file</label><button class="btn" id="bkLoad">Carica copia</button></div></div>';
   h+='<div class="gtitle">Ripristino</div><div class="group glass"><div class="row"><label>Riporta tutto come all’inizio<br><small>La chiave Google Maps resta salvata</small></label><button class="btn red" id="reset">Ripristina</button></div></div>';
-  h+='<div class="note" style="text-align:center">iCar 4.2 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
+  h+='<div class="note" style="text-align:center">iCar 4.2.1 · mappe © OpenStreetMap / Google · ricerca Photon · percorsi OSRM · meteo Open-Meteo</div>';
   $('#setBody').innerHTML=h;
 
   const on=(id,ev,f)=>{ const e=document.getElementById(id); if(e) e[ev]=f; };
@@ -1651,7 +1653,7 @@ function renderSettings(){
   on('sBeep','onchange',e=>{S.beep=e.target.checked;save(); if(S.beep) beep();});
   on('sCar','onchange',e=>{S.carName=e.target.value.trim().slice(0,20);save();renderCar();});
   on('carPick','onclick',()=>carIn.click());
-  on('carDel','onclick',()=>{S.carPhoto='';save();renderCar();renderSettings();});
+  on('carDel','onclick',()=>{S.carPhoto='none';save();renderCar();renderSettings();});
   on('clrTrips','onclick',()=>{S.trips=[];save();renderSettings();});
   on('sCall','onchange',e=>{S.call=e.target.value;save();});
   on('addC','onclick',addContact);

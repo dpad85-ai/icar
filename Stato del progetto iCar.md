@@ -1,20 +1,20 @@
 # Stato del progetto iCar (aggiornato il 18 novembre 2026)
 
-**Versione attuale:** iCar 4.2
+**Versione attuale:** iCar 4.2.1
 **Cartella sul computer:** D:\Daniele\Documents\iCar
 
 ## File in questa cartella
 - `index.html`, `sw.js`, `manifest.json`, `icon.png`, `icon-512.png`: i file dell'app da caricare su GitHub.
-- `Golf7-ritagliata.png`: la foto della Golf senza sfondo da mettere in iCar (resta solo sul computer e sull'iPad, non su GitHub perché si vede la targa).
+- `golf7.png`: la foto della Golf senza sfondo, con la targa cancellata e la scritta DANY. È anche su GitHub e iCar la mostra da sola.
 - `Guida installazione iCar.md`: come installare, aggiornare, mettere la chiave Google Maps, usare lo schermo diviso.
-- `versioni\`: una copia ZIP completa per ogni versione (iCar-3.6.zip, iCar-3.7.zip, iCar-3.7.1.zip, iCar-3.8.zip, iCar-3.8.1.zip, iCar-3.8.2.zip, iCar-4.0.zip, iCar-4.1.zip, iCar-4.2.zip…).
+- `versioni\`: una copia ZIP completa per ogni versione (iCar-3.6.zip, iCar-3.7.zip, iCar-3.7.1.zip, iCar-3.8.zip, iCar-3.8.1.zip, iCar-3.8.2.zip, iCar-4.0.zip, iCar-4.1.zip, iCar-4.2.zip, iCar-4.2.1.zip…).
 
 ## Dove altro è salvato
 - Anteprima "iCar" su Claude: https://claude.ai/artifact/TUEnQ4BJR1aVrc35kPAbYg
 - Progetto "iCar" su Claude: guida e questa scheda.
 - GitHub: repository **dpad85-ai/icar**, sito **https://dpad85-ai.github.io/icar** (la copia che usa l'iPad). Claude carica direttamente gli aggiornamenti su GitHub (permesso dato il 18/11/2026).
 
-## Cosa fa iCar 4.2
+## Cosa fa iCar 4.2.1
 - Mappa a tutto schermo: Google Maps (normale e satellite) con chiave personale, altrimenti OpenStreetMap. Mappa scura di notte.
 - Tre schermate: mappa e riquadri / mappa e app a metà schermo / solo mappa.
 - Navigatore interno con voce in italiano, ricalcolo, ora di arrivo; "Apri in Google Maps".
@@ -27,6 +27,7 @@
 - Stile 4.0: barra laterale che galleggia sopra la mappa (in basso con iPad in verticale), riquadri in vetro scuro più arrotondati, numeri in carattere arrotondato, tasti mappa rotondi, ricerca a pillola, sfondo delle app più colorato.
 - 4.1: riquadro meteo, data e ora in cima ai riquadri, animato secondo il tempo (sole, luna e stelle, nuvole, pioggia, neve, lampi); tachimetro più piccolo e sottile; icone di "Audio e app" sempre della stessa misura. In verticale il meteo è visibile in alto a sinistra.
 - 4.2: nel riquadro del tachimetro, al posto della scritta dell'avviso, la foto della propria auto con il nome sotto (Golf7); toccandola si cambia foto o nome. L'avviso di velocità resta: cartello rosso piccolo sul tachimetro. Nel riquadro meteo compare il nome del paese in cui ci si trova.
+- 4.2.1: riquadri in quest'ordine: meteo, tachimetro con la Golf, computer di bordo, Audio e app per ultimo. La foto della Golf (targa DANY) è inclusa in iCar.
 
 ## Scelte fatte
 - Google Maps navigatore predefinito per tutto.

@@ -1,10 +1,14 @@
-# iCar – guida all'installazione su iPad (versione 4.2)
+# iCar – guida all'installazione su iPad (versione 4.2.1)
 
-File (5): index.html, sw.js, icon.png, icon-512.png, manifest.json
+File (6): index.html, sw.js, icon.png, icon-512.png, manifest.json, golf7.png
+
+## Novità della 4.2.1: riquadri riordinati e Golf già pronta
+- Ordine dei riquadri: meteo, tachimetro con la Golf, computer di bordo e per ultimo **Audio e app**.
+- La foto della Golf, con la targa cancellata e scritto **DANY**, è già dentro iCar: non serve più sceglierla. Se avevi messo la foto vecchia, tocca la macchina → **Usa la Golf di iCar (targa DANY)**.
 
 ## Novità della 4.2: la tua Golf e il nome del paese
 - Nel riquadro del tachimetro c'è la **foto della tua auto** con il nome sotto (**Golf7**).
-- **Per mettere la foto (una volta sola):** salva sull'iPad l'immagine **Golf7-ritagliata.png** (te l'ha mandata Claude; è anche in D:\Daniele\Documents\iCar). Poi in iCar tocca la macchina nel riquadro → **Scegli la foto** → prendila da Foto o da File. La foto resta salvata solo sull'iPad (ed entra nella "Salva copia").
+- Per usare un'altra foto: tocca la macchina nel riquadro → **Scegli la foto** → prendila da Foto o da File. Una foto scelta così resta salvata solo sull'iPad (ed entra nella "Salva copia").
 - Toccando la macchina puoi anche **cambiare il nome** o **togliere la foto**; si fa anche da Impostazioni → Guida → "La mia auto".
 - L'**avviso di velocità** c'è ancora: tocca il tachimetro per cambiarlo; quando è attivo compare un piccolo cartello rosso sul tachimetro.
 - Nel riquadro meteo, sotto la data, c'è il **nome del paese** in cui ti trovi (si aggiorna quando ti sposti).
